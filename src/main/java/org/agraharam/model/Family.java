@@ -22,10 +22,15 @@ public class Family {
     private Vedam vedam;
 
     @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@JsonManagedReference
     private List<User> users;
 
     @OneToOne(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)
     private Address address;
+
+    @OneToMany(mappedBy = "family", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FamilyMember> familyMembers;
+
 
     public Family() {
         // Required by JPA

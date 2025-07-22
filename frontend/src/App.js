@@ -50,6 +50,7 @@ import { AuthContext } from './context/AuthContext';
 import AutoLogout from './components/AutoLogout';
 import { useContext } from 'react';
 import Navbar from './components/Navbar';
+import EditSpouse from './pages/EditSpouse';
 
 
 function App() {
@@ -219,7 +220,16 @@ function App() {
               <VolunteerHours />
             </ProtectedRoute>
           }
+        />  
+        <Route
+          path="/family-spouse/edit"
+          element={
+            <ProtectedRoute allowedRoles={['user','admin', 'superAdmin']}>
+              <EditSpouse />
+            </ProtectedRoute>
+          }
         />
+
         <Route
           path="/volunteer-hours/add/:memberId"
           element={

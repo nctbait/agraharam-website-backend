@@ -10,6 +10,8 @@ import org.agraharam.enums.AccessRole;
 import org.agraharam.enums.Gender;
 import org.agraharam.enums.Role;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Setter
 @Getter
@@ -20,6 +22,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "family_id", nullable = false)
+//    @JsonIgnore
      private Family family;
 
      private String firstName;
@@ -44,6 +47,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "access_role")
+    
     private AccessRole accessRole = AccessRole.user;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
