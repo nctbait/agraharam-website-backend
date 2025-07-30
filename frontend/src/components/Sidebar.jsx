@@ -15,13 +15,14 @@ import {
 
 const links = [
   { label: 'Events', icon: CalendarDaysIcon, to: '/user-events' },
-  { label: 'Matrimony Search', icon: HeartIcon, to: '/matrimony-profiles' },
   { label: 'Payments', icon: CreditCardIcon, to: '/user-payments' },
   { label: 'Family', icon: UsersIcon, to: '/user-family' },
-  { label: 'Tax Documents', icon: DocumentTextIcon, to: '/user-tax-docs' },
   { label: 'Upgrade Membership', icon: ArrowTrendingUpIcon, to: '/membership-upgrade' },
-  { label: 'Volunteer Hours', icon: ClockIcon, to: '/volunteer-hours' },
   { label: 'Submit Bill', icon: DocumentCurrencyDollarIcon, to: '/submit-bill' },
+  { label: 'Volunteer Signup', icon: UsersIcon, to: '/volunteer-interest' },
+  { label: 'Volunteer Hours', icon: ClockIcon, to: '/volunteer-hours' },
+  { label: 'Tax Documents', icon: DocumentTextIcon, to: '/user-tax-docs' },
+  { label: 'Matrimony Search', icon: HeartIcon, to: '/matrimony-profiles' },
   { to: '/notification-center', label: 'Notification Center', icon: BellIcon },
 ];
 

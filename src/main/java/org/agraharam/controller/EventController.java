@@ -14,6 +14,7 @@ import org.agraharam.model.PricingTier;
 import org.agraharam.repository.EventRepository;
 import org.agraharam.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,6 +50,22 @@ public class EventController {
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public List<EventSummary> getAllEvents() {
         return eventRepository.findAll().stream()
+                .map(EventSummary::from) // map to DTO
+                .toList();
+    }
+
+    @GetMapping("/upcoming")
+    @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    public List<EventSummary> getUpcomingEvents() {
+        return eventRepository.findByDateAfter(LocalDate.now()).stream()
+                .map(EventSummary::from) // map to DTO
+                .toList();
+    }
+
+    @GetMapping("/list/{date}")
+    //@PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    public List<EventSummary> getAllEventsAfterDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return eventRepository.findByDateAfter(date).stream()
                 .map(EventSummary::from) // map to DTO
                 .toList();
     }

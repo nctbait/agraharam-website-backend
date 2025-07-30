@@ -1,21 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
-
-const familyMembers = ['Sita Ram', 'Rama S.', 'Sita R.'];
-const eventOptions = ['Ugadi Celebrations', 'Summer Picnic', 'Annual Meeting'];
+import api from '../api/authAxios';
 
 export default function SubmitBill() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    member: '',
+    memberId: '',
+    memberRelation: '',
     amount: '',
     description: '',
-    event: '',
+    eventId: '',
     file: null,
+    zelleId: '',
+    zelleName: '',
   });
+  const [familyMembers, setFamilyMembers] = useState([]);
+  const [eventOptions, setEventOptions] = useState([]);
+  useEffect(() => {
+    const fetchFamilyMembers = async () => {
+      try {
+        const [primary, spouse, children] = await Promise.all([
+          api.get('/api/family/primary'),
+          api.get('/api/family/spouse'),
+         // api.get('/api/family/current_members'),
+        ]);
+
+        const members = [];
+
+        if (primary?.id && primary?.firstName) {
+          members.push({ id: primary.id, name: primary.firstName + ' ' + primary.lastName, relation: 'Primary' });
+        }
+
+        if (spouse?.id && spouse?.firstName) {
+          members.push({ id: spouse.id, name: spouse.firstName + ' ' + spouse.lastName, relation: 'Spouse' });
+        }
+        
+        setFamilyMembers(members);
+      } catch (err) {
+        console.error("Error loading family members", err);
+      }
+    };
+
+
+    const fetchEvents = async () => {
+      try {
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const date = oneYearAgo.toISOString().split("T")[0];
+        const events = await api.get(`/api/events/list/${date}`);
+        setEventOptions(events);
+      } catch (err) {
+        console.error("Error loading events", err);
+      }
+    };
+
+    fetchFamilyMembers();
+    fetchEvents();
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -25,11 +70,34 @@ export default function SubmitBill() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Bill submitted:', formData);
-    navigate('/user-payments');
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append("file", formData.file);
+      formDataToSend.append("data", JSON.stringify({
+        memberId: formData.memberId,
+        memberRelation: formData.memberRelation,
+        amount: formData.amount,
+        description: formData.description,
+        eventId: formData.eventId,
+        zelleId: formData.zelleId,
+        zelleName: formData.zelleName,
+      }));
+
+      await api.instance.post('/api/bills/submit', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      navigate('/user-payments');
+    } catch (err) {
+      console.error("Bill submission failed", err);
+    }
   };
+
 
   return (
     <>
@@ -40,17 +108,28 @@ export default function SubmitBill() {
           <h2 className="text-2xl font-bold mb-4">Submit New Bill</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
             <select
-              name="member"
-              value={formData.member}
-              onChange={handleChange}
+              name="memberId"
+              value={formData.memberId}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                const selectedMember = familyMembers.find(m => m.id === selectedId);
+                setFormData(prev => ({
+                  ...prev,
+                  memberId: selectedId,
+                  memberRelation: selectedMember?.relation || '',
+                }));
+              }}
               required
               className="form-select h-12 rounded-lg border border-gray-300 px-4"
             >
               <option value="" disabled>Select Family Member</option>
-              {familyMembers.map((name, idx) => (
-                <option key={idx} value={name}>{name}</option>
+              {familyMembers.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name} ({m.relation})
+                </option>
               ))}
             </select>
+
 
             <input
               type="number"
@@ -73,22 +152,50 @@ export default function SubmitBill() {
             />
 
             <select
-              name="event"
-              value={formData.event}
+              name="eventId"
+              value={formData.eventId}
               onChange={handleChange}
               className="form-select h-12 rounded-lg border border-gray-300 px-4"
             >
               <option value="">Select Associated Event (optional)</option>
-              {eventOptions.map((ev, idx) => (
-                <option key={idx} value={ev}>{ev}</option>
+              {eventOptions.map((ev) => (
+                <option key={ev.id} value={ev.id}>{ev.title}</option>
               ))}
             </select>
 
-            <div className="flex flex-col items-center gap-4 border-2 border-dashed border-gray-300 px-4 py-10 my-6 rounded-xl">
-            <p className="text-lg font-bold">Upload Related Documents</p>
-            <p className="text-sm text-gray-500 text-center">Click to upload or drag and drop</p>
-            <button type="button" className="rounded-xl h-10 px-4 bg-gray-100 text-black text-sm font-bold">Upload</button>
-          </div>
+            <input
+              type="text"
+              name="zelleId"
+              value={formData.zelleId}
+              onChange={handleChange}
+              placeholder="Zelle ID (Email or Phone)"
+              className="form-input h-12 rounded-lg border border-gray-300 px-4"
+              required
+            />
+
+            <input
+              type="text"
+              name="zelleName"
+              value={formData.zelleName}
+              onChange={handleChange}
+              placeholder="Name on Zelle Account"
+              className="form-input h-12 rounded-lg border border-gray-300 px-4"
+              required
+            />
+
+
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold">Upload Related Document</label>
+              <input
+                type="file"
+                name="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleChange}
+                className="form-input border border-gray-300 px-4 py-2 rounded-lg"
+                required
+              />
+            </div>
+
 
             <div className="flex justify-end">
               <button

@@ -10,6 +10,7 @@ import {
   ChartBarIcon,
   CalendarIcon,
   Cog6ToothIcon,
+  CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 
@@ -28,13 +29,16 @@ export default function AdminSidebar() {
 
   const adminLinks = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: WrenchIcon },
+    { to: '/membership-upgrade-approval' , label: 'Membership Upgrade Approval', icon: UsersIcon},
+    { to: '/event-payment-pending', label: 'Event Registration Payments', icon: CurrencyDollarIcon },
+    { to: '/admin/billapproval', label: 'Bill Approval', icon: CurrencyDollarIcon },
     { to: '/admin/create-event', label: 'Create Event', icon: CalendarIcon },
     { to: '/admin/manage-events', label: 'Manage Events', icon: CalendarIcon },
     { to: '/admin/tasks', label: 'Manage Tasks', icon: ClipboardDocumentListIcon },
+    { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
     { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
-    { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
-    { to: '/notification-center', label: 'Notification Center', icon: BellIcon },
+    { to: '/notification-center', label: 'Notification Center', icon: BellIcon }
   ];
 
   const linksToShow = role === 'superAdmin' ? [...adminLinks, ...superAdminLinks] : adminLinks;

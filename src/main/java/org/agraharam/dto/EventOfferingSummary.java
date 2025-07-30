@@ -5,6 +5,7 @@ import org.agraharam.model.EventOffering;
 
 @Data
 public class EventOfferingSummary {
+    Long id;
     public String name;
     public String description;
     public Double price;
@@ -16,6 +17,7 @@ public class EventOfferingSummary {
         dto.setMaxQuantity(of.getMaxQuantity());
         dto.setName(of.getName());
         dto.setPrice(of.getPrice());
+        dto.setId(of.getId());
         return dto;
     }
 

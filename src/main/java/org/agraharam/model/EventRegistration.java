@@ -34,13 +34,19 @@ public class EventRegistration {
     private User user;
 
     @ManyToMany
-    private List<FamilyMember> familyMembers = new ArrayList<>();
+    private List<User> users = new ArrayList<>(); // Primary, Spouse
+
+    @ManyToMany
+    private List<FamilyMember> familyMembers = new ArrayList<>(); //children
 
     @OneToMany(mappedBy = "registration", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Guest> guests = new ArrayList<>();
 
     private String zelleConfirmation;
 
+    @OneToMany(mappedBy = "registration", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventOfferingSelection> offerings = new ArrayList<>();
+    
     @Enumerated(EnumType.STRING)
     private EventStatus status; // e.g., CONFIRMED, CANCELLED, WAITLISTED, SUBMITTED
 

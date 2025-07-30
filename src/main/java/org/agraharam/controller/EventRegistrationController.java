@@ -66,4 +66,10 @@ public class EventRegistrationController {
     public List<EventDTO> getPastEvents(Principal principal) {
         return registrationService.getPastEventsForFamily(principal.getName());
     }
+
+    @GetMapping("/{id}")
+    public EventRegistrationDTO getRegistration(@PathVariable Long id, Principal principal) {
+        return registrationService.getRegistration(id, principal.getName());
+    }
+
 }

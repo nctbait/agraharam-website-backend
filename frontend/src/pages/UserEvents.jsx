@@ -109,7 +109,8 @@ export default function UserEvents() {
                                                 {new Date(event.date).toLocaleDateString()}
                                             </p>
                                             <p className="text-sm text-gray-800 mt-1">
-                                                <strong>Members:</strong> {event.familyMemberNames.join(', ') || 'None'}
+                                            <strong>Members:</strong> {Array.isArray(event.familyMemberNames) ? event.familyMemberNames.join(', ') : 'None'}
+
                                             </p>
                                             <p className="text-sm text-gray-800">
                                                 <strong>Guests:</strong> {event.guestNames.join(', ') || 'None'}

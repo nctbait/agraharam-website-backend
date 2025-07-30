@@ -30,6 +30,7 @@ public class Payment {
     private LocalDateTime paymentDate;
     private String paymentType;     // membership, event, donation, etc.
     private Long referenceId;       // Could point to eventId or membershipId
+    private String referenceyType;
     private String description;
     private Boolean taxDeductible = true;
 
@@ -37,6 +38,7 @@ public class Payment {
     private String confirmation;   // generic confirmation number
     private String recipientName;  // paid-to info
     private String status;         // pending, approved, rejected
+    private String paymentMethod; //zelle or paypal
     
     // Getters and setters
 }

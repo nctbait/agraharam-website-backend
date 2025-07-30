@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.util.List;
 
 import org.agraharam.dto.FamilyMemberDTO;
+import org.agraharam.dto.PrimaryDTO;
 import org.agraharam.dto.SpouseDTO;
 import org.agraharam.model.FamilyMember;
 import org.agraharam.model.User;
@@ -118,6 +119,18 @@ public class FamilyMemberController {
                 spouse.getLastName(),
                 spouse.getEmail(),
                 spouse.getPhoneNumber());
+    }
+
+    @GetMapping("/primary")
+    public PrimaryDTO getPrimary(Principal principal) {
+        User primary = userRepo.findByEmail(principal.getName()).orElseThrow();
+
+        return new PrimaryDTO(
+                primary.getId(),
+                primary.getFirstName(),
+                primary.getLastName(),
+                primary.getEmail(),
+                primary.getPhoneNumber());
     }
 
     @PutMapping("/spouse")

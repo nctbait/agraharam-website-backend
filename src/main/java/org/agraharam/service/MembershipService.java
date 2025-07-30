@@ -85,7 +85,7 @@ public class MembershipService {
     }
 
     public CurrentMembershipResponse getCurrentMembership(Long userId) {
-    return userMembershipRepository.findTopByUserIdAndStatusOrderByStartDateDesc(userId, "active")
+    return userMembershipRepository.findCurrentMembership(userId, LocalDate.now()).stream().findFirst()
         .map(m -> new CurrentMembershipResponse(
             m.getMembershipType().getName(),
             m.getStartDate(),
@@ -108,11 +108,11 @@ public void createPendingMembership(Long userId, MembershipUpgradeRequest reques
     Payment payment = new Payment();
     payment.setUser(user);
     payment.setAmount(type.getPrice());
-    payment.setPaymentType("membership");
+    payment.setPaymentType("user_membership");
     payment.setPaymentDate(LocalDateTime.now());
     payment.setTaxDeductible(true);
     payment.setDescription(type.getName() + " membership - via " + request.getPaymentMethod());
-
+    payment.setPaymentMethod(request.getPaymentMethod());
     payment.setRecipientName(request.getRecipientName());    
     payment.setConfirmation(request.getConfirmation());
 
@@ -127,8 +127,11 @@ public void createPendingMembership(Long userId, MembershipUpgradeRequest reques
     membership.setEndDate(endDate);
     membership.setStatus("pending");
     membership.setPayment(payment);
-
     userMembershipRepository.save(membership);
+    
+    payment.setReferenceyType("UserMembership");
+    payment.setReferenceId(membership.getId());
+    paymentRepository.save(payment); // Final update
 }
 
 

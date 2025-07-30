@@ -13,5 +13,6 @@ public interface EventRegistrationService {
     void cancelRegistration(Long id, String email);
     public List<EventDTO> getAvailableEventsForFamily(String email) ;
     public List<EventDTO> getPastEventsForFamily(String email) ;
+    public EventRegistrationDTO getRegistration(Long id, String email);
 }
 

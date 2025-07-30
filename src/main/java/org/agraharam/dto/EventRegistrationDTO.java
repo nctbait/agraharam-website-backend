@@ -4,7 +4,12 @@ import java.util.List;
 
 public record EventRegistrationDTO(
     Long eventId,
-    List<Long> familyMemberIds,
+    List<FamilyMemberRequest> familyMembers,
     List<GuestDTO> guests,
-    String zelleConfirmation
+    List<OfferingSelectionDTO> offerings,
+    String zelleConfirmation,
+    Double totalAmount
 ) {}
+
+
+
