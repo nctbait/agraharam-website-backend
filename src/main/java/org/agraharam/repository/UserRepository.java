@@ -24,4 +24,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
        "AND (LOWER(u.firstName) LIKE %:query% OR LOWER(u.lastName) LIKE %:query% OR LOWER(u.email) LIKE %:query%)")
     List<User> findEligibleUsers(@Param("query") String query);
 
+    @Query("SELECT u FROM User u WHERE " +
+       "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+       "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+       "LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<User> searchByNameOrEmail(@Param("query") String query);
+
 }

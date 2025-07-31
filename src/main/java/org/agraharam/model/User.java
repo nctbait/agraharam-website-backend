@@ -10,8 +10,6 @@ import org.agraharam.enums.AccessRole;
 import org.agraharam.enums.Gender;
 import org.agraharam.enums.Role;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 @Entity
 @Setter
 @Getter

@@ -56,7 +56,7 @@ import AdminEventPaymentApprovals from './pages/AdminEventPaymentApprovals';
 import AdminBillApprovals from './pages/AdminBillApprovals';
 import VolunteerInterest from './pages/VolunteerInterest';
 import AdminVolunteerHourApprovals from './pages/AdminVolunteerHourApproval';
-
+import MatrimonyApprovalDetails from './pages/MatrimonyApprovalDetails';
 
 function App() {
   //useAutoLogout();
@@ -119,6 +119,15 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <AdminVolunteerHourApprovals />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/matrimony/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <MatrimonyApprovalDetails />
           </ProtectedRoute>
         }
       />

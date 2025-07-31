@@ -25,11 +25,23 @@ authAxios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+const uploadFile = (url, file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return authAxios.post(url, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  }).then(res => res.data);
+};
+
+
 const api = {
   get: (url) => authAxios.get(url).then(res => res.data),
   post: (url, data) => authAxios.post(url, data).then(res => res.data),
   put: (url, data) => authAxios.put(url, data).then(res => res.data),
   delete: (url) => authAxios.delete(url).then(res => res.data),
+  uploadFile,
   instance: authAxios
 };
 

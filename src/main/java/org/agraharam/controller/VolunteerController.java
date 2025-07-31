@@ -1,13 +1,9 @@
 package org.agraharam.controller;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.agraharam.dto.VolunteerInterestRequest;
-import org.agraharam.model.User;
-import org.agraharam.model.VolunteerInterest;
 import org.agraharam.service.VolunteerInterestServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

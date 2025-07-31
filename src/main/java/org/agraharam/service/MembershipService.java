@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.agraharam.audit.Auditable;
 import org.agraharam.dto.CurrentMembershipResponse;
 import org.agraharam.dto.MembershipUpgradeRequest;
 import org.agraharam.model.MembershipType;

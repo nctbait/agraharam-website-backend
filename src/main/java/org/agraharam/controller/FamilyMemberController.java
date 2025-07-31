@@ -6,6 +6,7 @@ import java.util.List;
 import org.agraharam.dto.FamilyMemberDTO;
 import org.agraharam.dto.PrimaryDTO;
 import org.agraharam.dto.SpouseDTO;
+import org.agraharam.dto.UserSearchResult;
 import org.agraharam.model.FamilyMember;
 import org.agraharam.model.User;
 import org.agraharam.repository.FamilyMemberRepository;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -176,6 +178,20 @@ public class FamilyMemberController {
                 member.getPreferences());
 
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/user-search")
+    public List<UserSearchResult> getUserbyNameofEmail(@RequestParam("query") String query){
+        return userRepo.searchByNameOrEmail(query).stream().filter(u -> u.getRole().name().equals("primary") && u.isHasLogin())
+        .map(u -> new UserSearchResult(
+                u.getId(),
+                u.getFamily().getId(),
+                u.getFirstName(),
+                u.getLastName(),
+                u.getEmail()
+            )
+        )
+        .toList();
     }
 
 }
