@@ -15,6 +15,8 @@ const authAxios = axios.create({
 authAxios.interceptors.request.use(
   (config) => {
     const token = getToken();
+    //const payload = JSON.parse(atob(token.split('.')[1]));
+    //console.log(payload);
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

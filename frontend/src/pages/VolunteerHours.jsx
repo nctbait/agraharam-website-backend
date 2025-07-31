@@ -1,53 +1,93 @@
-import React from 'react';
+// VolunteerHours.jsx
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
+import api from '../api/authAxios';
 
-const familyMembers = [
-  { id: 1, name: 'Sita Ram', approved: 12, pending: 2, total: 14 },
-  { id: 2, name: 'Rama S.', approved: 5, pending: 1, total: 6 },
-  { id: 3, name: 'Sita R.', approved: 3, pending: 0, total: 3 },
-];
-
-export default function VolunteerHours() {
+const VolunteerHours = () => {
+  const [hoursData, setHoursData] = useState([]);
+  const [yearlySummary, setYearlySummary] = useState([]);
   const navigate = useNavigate();
 
-  const handleAddHours = (memberId) => {
-    navigate(`/volunteer-hours/add/${memberId}`);
+useEffect(() => {
+  const fetchAll = async () => {
+    const [summaryRes, yearlyRes] = await Promise.all([
+      api.get('/api/volunteer-hours/family-summary'),
+      api.get('/api/volunteer-hours/family-yearly-summary')
+    ]);
+    setHoursData(summaryRes || []);
+    setYearlySummary(yearlyRes || []);
   };
+  fetchAll();
+}, []);
+
 
   return (
     <>
       <Navbar />
       <div className="flex">
-      <Sidebar isOpen={true} showDashboardLink={true} />
-        <main className="flex-1 max-w-4xl mx-auto bg-white shadow p-6 rounded-xl my-6">
-        <h2 className="text-2xl font-bold mb-6">Volunteer Hours Summary</h2>
-        <div className="space-y-4">
-          {familyMembers.map((member) => (
-            <div
-              key={member.id}
-              className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 border rounded-lg p-4"
-            >
-              <div>
-                <h3 className="text-lg font-semibold">{member.name}</h3>
-                <p className="text-sm text-gray-600">Approved: {member.approved} hrs</p>
-                <p className="text-sm text-gray-600">Pending: {member.pending} hrs</p>
-                <p className="text-sm text-gray-600">Total: {member.total} hrs</p>
-              </div>
-              <button
-                onClick={() => handleAddHours(member.id)}
-                className="mt-3 sm:mt-0 h-10 px-4 rounded-lg bg-blue-600 text-white font-semibold text-sm"
-              >
-                Add Hours
-              </button>
-            </div>
-          ))}
-        </div>
-      </main>
+        <Sidebar isOpen={true}/>
+        <main className="flex-1 max-w-5xl mx-auto px-4 py-8">
+          <h1 className="text-xl font-bold mb-6">Volunteer Hours Summary</h1>
+          <table className="w-full border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="border px-4 py-2 text-left">Name</th>
+                <th className="border px-4 py-2 text-left">Relationship</th>
+                <th className="border px-4 py-2 text-left">Approved Hours</th>
+                <th className="border px-4 py-2 text-left">Pending Hours</th>
+                <th className="border px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hoursData.map(member => (
+                <tr key={member.memberId + '-' + member.relationship}>
+                  <td className="border px-4 py-2">{member.name}</td>
+                  <td className="border px-4 py-2">{member.relationship}</td>
+                  <td className="border px-4 py-2">{member.approvedHours}</td>
+                  <td className="border px-4 py-2">{member.pendingHours}</td>
+                  <td className="border px-4 py-2">
+                    <button
+                      onClick={() => navigate(`/add-volunteer-hours/${member.memberId}?relationship=${member.relationship}`)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    >
+                      Add Hours
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h2 className="text-lg font-semibold mt-10 mb-4">Year-wise Approved Hours</h2>
+<table className="w-full border">
+  <thead>
+    <tr className="bg-gray-100">
+      <th className="border px-4 py-2 text-left">Name</th>
+      <th className="border px-4 py-2 text-left">Relationship</th>
+      <th className="border px-4 py-2 text-left">Year</th>
+      <th className="border px-4 py-2 text-left">Approved Hours</th>
+    </tr>
+  </thead>
+  <tbody>
+    {yearlySummary.map(row => (
+      <tr key={`${row.memberId}-${row.relationship}-${row.year}`}>
+        <td className="border px-4 py-2">{row.name}</td>
+        <td className="border px-4 py-2">{row.relationship}</td>
+        <td className="border px-4 py-2">{row.year}</td>
+        <td className="border px-4 py-2">{row.approvedHours}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+        </main>
       </div>
       <Footer />
     </>
   );
-}
+};
+
+export default VolunteerHours;

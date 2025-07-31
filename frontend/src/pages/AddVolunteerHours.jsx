@@ -1,113 +1,144 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+// AddVolunteerHours.jsx
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
+import api from '../api/authAxios';
 
-const familyLookup = {
-  1: 'Sita Ram',
-  2: 'Rama S.',
-  3: 'Sita R.',
-};
-
-export default function AddVolunteerHours() {
+const AddVolunteerHours = () => {
   const { memberId } = useParams();
-  const navigate = useNavigate();
-  const memberName = familyLookup[memberId] || 'Unknown Member';
+  const [searchParams] = useSearchParams();
+  const relationship = searchParams.get('relationship');
 
+  const [member, setMember] = useState(null);
   const [formData, setFormData] = useState({
     date: '',
     startTime: '',
     hours: '',
-    event: '',
-    description: '',
+    eventId: '',
+    committeeId: '',
+    description: ''
   });
+  const [events, setEvents] = useState([]);
+  const [committees, setCommittees] = useState([]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const [primary, spouse, children, eventsRes, committeesRes] = await Promise.all([
+        api.get('/api/family/primary'),
+        api.get('/api/family/spouse'),
+        api.get('/api/family/current_members'),
+        api.get('/api/events/upcoming'),
+        api.get('/api/committees/active')
+      ]);
+
+      const familyList = [];
+      if (primary?.id && primary?.firstName) {
+        familyList.push({ id: primary.id, name: primary.firstName + ' ' + primary.lastName, relationship: 'Primary' });
+      }
+
+      if (spouse?.id && spouse?.firstName) {
+        familyList.push({ id: spouse.id, name: spouse.firstName + ' ' + spouse.lastName, relationship: 'Spouse' });
+      }
+
+      if (Array.isArray(children)) {
+        children.forEach(c => {
+          familyList.push({ id: c.id, name: c.name, relationship: c.relation });
+        });
+      }
+
+      const target = familyList.find(f => f.id.toString() === memberId && f.relationship === relationship);
+      setMember(target);
+      setEvents(eventsRes);
+      setCommittees(committeesRes);
+    };
+    fetchAll();
+  }, [memberId, relationship]);
+
+  const handleChange = e => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(`Submitted for member ${memberId}:`, formData);
+  const handleSubmit = async () => {
+    const payload = {
+      memberId,
+      relationship,
+      ...formData,
+      eventId: formData.eventId || null,
+      committeeId: formData.committeeId || null
+    };
+
+    await api.post('/api/volunteer-hours', payload);
+    navigate('/volunteer-hours');
   };
 
   return (
     <>
       <Navbar />
-      <div className="flex">
+      <div className="flex bg-gray-50 min-h-screen">
         <Sidebar isOpen={true} />
-        <main className="flex-1 max-w-3xl mx-auto bg-white shadow p-6 rounded-xl my-6">
-          <h2 className="text-2xl font-bold mb-4">Add Volunteer Hours for {memberName}</h2>
-          <div className="flex justify-between mb-4">
-            <button
-              onClick={() => navigate('/volunteer-hours')}
-              type="button"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              ← Back to Volunteer Summary
-            </button>
-          </div>
+        <main className="flex-1 max-w-3xl mx-auto px-6 py-10">
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h1 className="text-2xl font-bold text-gray-800 mb-6">Submit Volunteer Hours</h1>
 
-            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              aria-label="Date of Service"
-              className="form-input h-12 rounded-lg border border-gray-300 px-4"
-              required
-            />
-            <span className="text-sm text-gray-500">Date of Service</span>
-            <input
-              type="time"
-              name="startTime"
-              value={formData.startTime}
-              onChange={handleChange}
-              aria-label="Start Time of Service"
-              className="form-input h-12 rounded-lg border border-gray-300 px-4"
-              required
-            />
-            <span className="text-sm text-gray-500">Start Time of Service</span>
-            <input
-              type="number"
-              name="hours"
-              placeholder="Hours of Service"
-              value={formData.hours}
-              onChange={handleChange}
-              className="form-input h-12 rounded-lg border border-gray-300 px-4"
-              required
-            />
-            <input
-              type="text"
-              name="event"
-              placeholder="Linked Event (optional)"
-              value={formData.event}
-              onChange={handleChange}
-              className="form-input h-12 rounded-lg border border-gray-300 px-4"
-            />
-            <textarea
-              name="description"
-              placeholder="Description of the service"
-              rows={4}
-              value={formData.description}
-              onChange={handleChange}
-              className="form-textarea rounded-lg border border-gray-300 px-4 py-2"
-              required
-            ></textarea>
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold"
-              >
-                Submit
-              </button>
-            </div>
-          </form>
+            {member ? (
+              <div className="space-y-6">
+                <div className="text-lg font-medium text-gray-700">{member.name} <span className="text-sm text-gray-500">({member.relationship})</span></div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Date of Volunteering</label>
+                    <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Start Time of Volunteering</label>
+                    <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+                  </div>
+                  <input type="number" name="hours" placeholder="Number of Hours" value={formData.hours} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2" />
+
+                  <select name="eventId" value={formData.eventId} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2">
+                    <option value="">-- Select Event (optional) --</option>
+                    {events.map(e => <option key={e.id} value={e.id}>{e.title}</option>)}
+                  </select>
+
+                  <select name="committeeId" value={formData.committeeId} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2">
+                    <option value="">-- Select Committee --</option>
+                    {committees.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <textarea
+                  name="description"
+                  rows="4"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Description of work..."
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                />
+
+                <button
+                  onClick={handleSubmit}
+                  className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+                >
+                  Submit Hours
+                </button>
+              </div>
+            ) : (
+              <p className="text-gray-600">Loading member info...</p>
+            )}
+          </div>
         </main>
       </div>
       <Footer />
     </>
   );
-}
+};
+
+export default AddVolunteerHours;

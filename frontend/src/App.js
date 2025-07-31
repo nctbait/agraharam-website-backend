@@ -55,6 +55,7 @@ import AdminMembershipApprovals from './pages/AdminMembershipApprovals';
 import AdminEventPaymentApprovals from './pages/AdminEventPaymentApprovals';
 import AdminBillApprovals from './pages/AdminBillApprovals';
 import VolunteerInterest from './pages/VolunteerInterest';
+import AdminVolunteerHourApprovals from './pages/AdminVolunteerHourApproval';
 
 
 function App() {
@@ -86,7 +87,7 @@ function App() {
         }
       />
 
-<Route
+      <Route
         path="/dashboard"
         element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
@@ -109,6 +110,15 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <AdminMembershipApprovals />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/volunteer-hour-approval"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminVolunteerHourApprovals />
           </ProtectedRoute>
         }
       />
@@ -262,7 +272,7 @@ function App() {
       />
 
       <Route
-        path="/volunteer-hours/add/:memberId"
+        path="/add-volunteer-hours/:memberId"
         element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
             <AddVolunteerHours />

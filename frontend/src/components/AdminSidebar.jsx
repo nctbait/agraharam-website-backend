@@ -10,7 +10,7 @@ import {
   ChartBarIcon,
   CalendarIcon,
   Cog6ToothIcon,
-  CurrencyDollarIcon
+  CurrencyDollarIcon,ClockIcon
 } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 
@@ -35,6 +35,7 @@ export default function AdminSidebar() {
     { to: '/admin/create-event', label: 'Create Event', icon: CalendarIcon },
     { to: '/admin/manage-events', label: 'Manage Events', icon: CalendarIcon },
     { to: '/admin/tasks', label: 'Manage Tasks', icon: ClipboardDocumentListIcon },
+    { to: '/admin/volunteer-hour-approval', label: 'Volunteer Hours Approval', icon: ClockIcon },
     { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
     { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
