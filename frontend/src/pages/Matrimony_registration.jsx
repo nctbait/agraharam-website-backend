@@ -9,6 +9,7 @@ export default function MatrimonyRegistration() {
     gender: '',
     gothram: '',
     vedam: '',
+    sakha: '',
     maritalStatus: '',
     dateOfBirth: '',
     timeOfBirth: '',
@@ -30,6 +31,7 @@ export default function MatrimonyRegistration() {
     currentLocation: '',
     willingToRelocate: '',
     about: '',
+    requirements: '',
     imageDisplayPreference: '',
     profilePictureUrl: ''
   });
@@ -93,6 +95,9 @@ export default function MatrimonyRegistration() {
             <input name="gothram" value={formData.gothram} onChange={handleChange}
               placeholder="Gothram" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
 
+            <input name="sakha" value={formData.sakha} onChange={handleChange}
+              placeholder="Sakha" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+
             <select name="vedam" value={formData.vedam} onChange={handleChange}
               className="form-input h-12 rounded-xl border border-gray-300 px-4">
               <option>Select Vedam</option>
@@ -106,9 +111,9 @@ export default function MatrimonyRegistration() {
                 <span className="text-[#111418] text-base font-medium">Date of Birth </span>
                 <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange}
                   placeholder="Date of Birth" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-                  <span className="text-[#111418] text-base font-medium"> Time of Birth </span>
-                  <input type="time" name="timeOfBirth" value={formData.timeOfBirth} onChange={handleChange}
-              placeholder="Time of Birth" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+                <span className="text-[#111418] text-base font-medium"> Time of Birth </span>
+                <input type="time" name="timeOfBirth" value={formData.timeOfBirth} onChange={handleChange}
+                  placeholder="Time of Birth" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
               </label>
             </div>
 
@@ -227,6 +232,9 @@ export default function MatrimonyRegistration() {
 
             <input name="about" value={formData.about} onChange={handleChange}
               placeholder="Few words about yourself" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+
+            <input name="requirements" value={formData.requirements} onChange={handleChange}
+              placeholder="Few words about your requirements" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
 
             <select name="imageDisplayPreference" value={formData.imageDisplayPreference} onChange={handleChange}
               className="form-input h-12 rounded-xl border border-gray-300 px-4">

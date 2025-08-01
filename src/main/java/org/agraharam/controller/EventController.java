@@ -1,5 +1,6 @@
 package org.agraharam.controller;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -10,8 +11,10 @@ import org.agraharam.audit.Auditable;
 import org.agraharam.dto.EventRequest;
 import org.agraharam.dto.EventSummary;
 import org.agraharam.model.Event;
+import org.agraharam.model.EventOffering;
 import org.agraharam.model.PricingTier;
 import org.agraharam.repository.EventRepository;
+import org.agraharam.service.AuditLogServiceImpl;
 import org.agraharam.service.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -37,12 +40,14 @@ public class EventController {
     private final EventService eventService;
     @Autowired
     private EventRepository eventRepository;
+    @Autowired
+    private AuditLogServiceImpl auditLog;
 
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     @Auditable(action = "CREATE_EVENT", target = "Event")
-    public ResponseEntity<?> createEvent(@RequestBody EventRequest eventRequest) {
-        eventService.saveEvent(eventRequest);
+    public ResponseEntity<?> createEvent(@RequestBody EventRequest eventRequest,Principal principal) {
+        eventService.saveEvent(eventRequest,principal.getName());
         return ResponseEntity.ok("Event created");
     }
 
@@ -73,11 +78,13 @@ public class EventController {
     @DeleteMapping("/delete/{eventId}")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     @Auditable(action = "DELETE_EVENT", target = "Event")
-    public ResponseEntity<?> deleteEvent(@PathVariable Long eventId) {
+    public ResponseEntity<?> deleteEvent(@PathVariable Long eventId,Principal principal) {
         if (!eventRepository.existsById(eventId)) {
             return ResponseEntity.notFound().build();
         }
         eventRepository.deleteById(eventId);
+        auditLog.log("DELETE_EVENT", principal.getName(), "Event", String.valueOf(eventId),"Delete event with id:"+ eventId);
+
         return ResponseEntity.ok().build();
     }
 
@@ -92,7 +99,7 @@ public class EventController {
     @PutMapping("/update/{eventId}")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     @Auditable(action = "EDIT_EVENT", target = "Event")
-    public ResponseEntity<?> updateEvent(@PathVariable Long eventId, @RequestBody EventRequest req) {
+    public ResponseEntity<?> updateEvent(@PathVariable Long eventId, @RequestBody EventRequest req,Principal principal) {
         Optional<Event> existing = eventRepository.findById(eventId);
         if (existing.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -125,8 +132,26 @@ public class EventController {
         }).collect(Collectors.toList());
 
         event.getPricing().addAll(updatedPricing);
+        
+        event.getOfferings().clear();// Remove existing offerings
+
+        List<EventOffering> offeringList = req.offerings.stream()
+        .map(o -> {
+            EventOffering offering = new EventOffering();
+            offering.setName(o.name);
+            offering.setDescription(o.description);
+            offering.setPrice(o.price);
+            offering.setMaxQuantity(o.maxQuantity);
+            offering.setEvent(event); // reverse mapping
+            return offering;
+        })
+        .collect(Collectors.toList());
+
+        event.getOfferings().addAll(offeringList);
 
         eventRepository.save(event);
+
+        auditLog.log("UPDATE_EVENT", principal.getName(), "Event", String.valueOf(event.getId()),"Saving event with id:"+ event.getId());
         return ResponseEntity.ok("Event updated");
     }
 

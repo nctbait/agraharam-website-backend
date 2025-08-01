@@ -50,15 +50,15 @@ public class VolunteerHourController {
 
     @PostMapping("/admin/volunteer-hours/{id}/{action}")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id, @PathVariable String action) {
-        service.updateVolunteerHourStatus(id, action);
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @PathVariable String action, Principal principal) {
+        service.updateVolunteerHourStatus(id, action,principal.getName());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/admin/volunteer-hours/bulk/{action}")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> bulkUpdateStatus(@PathVariable String action, @RequestBody List<Long> ids) {
-        service.bulkUpdateVolunteerHourStatus(ids, action);
+    public ResponseEntity<?> bulkUpdateStatus(@PathVariable String action, @RequestBody List<Long> ids, Principal principal) {
+        service.bulkUpdateVolunteerHourStatus(ids, action,principal.getName());
         return ResponseEntity.ok().build();
     }
 

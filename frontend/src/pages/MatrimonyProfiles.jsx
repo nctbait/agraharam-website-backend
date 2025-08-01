@@ -19,6 +19,7 @@ const MatrimonySearch = () => {
   const allColumns = [
     { key: 'name', label: 'Name' },
     { key: 'gender', label: 'Gender' },
+    { key: 'sakha', label: 'Sakha' },
     { key: 'dateOfBirth', label: 'Date of Birth' },
     { key: 'gothram', label: 'Gothram' },
     { key: 'nakshatram', label: 'Nakshatram' },
@@ -33,8 +34,9 @@ const MatrimonySearch = () => {
       const res = await api.get('/api/matrimony/all-profiles');
       setProfiles(res);
       setFiltered(res);
+      const defaultVisible = ['name', 'gender', 'gothram', 'sakha','occupation'];
       const visibilityMap = {};
-      allColumns.forEach(col => visibilityMap[col.key] = true);
+      allColumns.forEach(col => visibilityMap[col.key] = defaultVisible.includes(col.key));
       setVisibleColumns(visibilityMap);
     };
     fetchAll();

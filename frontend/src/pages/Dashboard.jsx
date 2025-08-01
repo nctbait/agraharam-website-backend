@@ -6,8 +6,6 @@ import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import UserSummaryCard from '../components/UserSummaryCard';
 import AnalyticsPanel from '../components/AnalyticsPanel';
 import UpcomingEvents from '../components/UpcomingEvents';
-import MatrimonyMatches from '../components/MatrimonyMatches';
-import FamilyList from '../components/FamilyList';
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -31,12 +29,9 @@ export default function Dashboard() {
               <Bars3Icon className="h-5 w-5" />
             )}
           </button>
-
           <UserSummaryCard />
           <AnalyticsPanel />
           <UpcomingEvents />
-          <MatrimonyMatches />
-          <FamilyList />
         </div>
       </div>
       <Footer />

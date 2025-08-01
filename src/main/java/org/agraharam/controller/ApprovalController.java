@@ -19,6 +19,7 @@ import org.agraharam.model.User;
 import org.agraharam.repository.AddressRepository;
 import org.agraharam.repository.FamilyRepository;
 import org.agraharam.repository.UserRepository;
+import org.agraharam.service.AuditLogServiceImpl;
 import org.agraharam.service.EmailService;
 
 @RestController
@@ -30,9 +31,10 @@ private UserRepository userRepository;
 private AddressRepository addressRepository;
 @Autowired
 private FamilyRepository familyRepository;
-
 @Autowired
 private EmailService emailService;
+@Autowired
+private AuditLogServiceImpl auditLog;
 
 @GetMapping("/api/pending-users")
 @PreAuthorize("hasAuthority('superAdmin')")

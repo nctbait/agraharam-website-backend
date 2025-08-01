@@ -6,7 +6,6 @@ const events = [
     title: 'Ugadi Celebrations',
     date: 'April 5, 2025',
     location: 'Cary Hindu Temple',
-    image: 'https://via.placeholder.com/300x160',
     isRegistered: false,
   },
   {
@@ -14,7 +13,6 @@ const events = [
     title: 'Summer Picnic',
     date: 'June 22, 2025',
     location: 'Lake Crabtree Park',
-    image: 'https://via.placeholder.com/300x160',
     isRegistered: true,
   },
 ];
@@ -29,11 +27,6 @@ export default function UpcomingEvents() {
             key={event.id}
             className="bg-white rounded-xl shadow overflow-hidden"
           >
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-40 object-cover"
-            />
             <div className="p-4">
               <h3 className="text-lg font-semibold">{event.title}</h3>
               <p className="text-sm text-gray-600">{event.date} · {event.location}</p>

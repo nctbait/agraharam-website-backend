@@ -45,7 +45,7 @@ public class MembershipController {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        membershipService.createPendingMembership(user.getId(), request);
+        membershipService.createPendingMembership(user.getId(), request,email);
         return ResponseEntity.ok("Membership upgrade request submitted.");
     }
 

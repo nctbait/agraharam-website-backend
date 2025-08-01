@@ -33,6 +33,9 @@ public class VolunteerInterestServiceImpl implements VolunteerInterestService {
     @Autowired
     private UserRepository userRepo;
 
+    @Autowired
+    private  AuditLogServiceImpl auditLogService;
+
     @Transactional
     public ResponseEntity<?> submitVolunteerInterest(List<VolunteerInterestRequest> requests, String email) {
         List<VolunteerInterest> all = new ArrayList<>();
@@ -76,7 +79,12 @@ public class VolunteerInterestServiceImpl implements VolunteerInterestService {
             }
         }
         
-        repository.saveAll(all);
+        List<VolunteerInterest>  list = repository.saveAll(all);
+        for(VolunteerInterest each : list){
+            auditLogService.log("VOLUNTEER_INTEREST_SUBMITTED", email, 
+        "VolunteerInterest", String.valueOf(each.getId()), 
+        "VOLUNTEER_INTEREST_SUBMITTED by :"+ email);
+        }
         return ResponseEntity.ok("Submitted Volunteer Interests");
     }
 

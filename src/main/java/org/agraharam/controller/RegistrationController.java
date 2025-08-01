@@ -2,6 +2,7 @@ package org.agraharam.controller;
 
 import org.agraharam.repository.FamilyRepository;
 import org.agraharam.repository.UserRepository;
+import org.agraharam.service.AuditLogServiceImpl;
 import org.agraharam.service.EmailService;
 import org.agraharam.repository.PasswordRepository;
 import org.agraharam.repository.AddressRepository;
@@ -26,6 +27,7 @@ public class RegistrationController {
   @Autowired AddressRepository addressRepo;
   @Autowired PasswordRepository passwordRepo;
   @Autowired EmailService emailService;
+  @Autowired AuditLogServiceImpl auditLog;
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody UserRegistrationRequest req) {
@@ -53,7 +55,7 @@ public class RegistrationController {
     primary.setPassword(pwd);
     userRepo.save(primary);
     emailService.sendRegistrationNotice(primary.getFirstName(), req.lastName);
-
+    auditLog.log("REGISTER", req.email, "User", String.valueOf(primary.getId()), "Registertion of user submitted: "+primary.getId() );
     return ResponseEntity.ok("Registered");
   }
 

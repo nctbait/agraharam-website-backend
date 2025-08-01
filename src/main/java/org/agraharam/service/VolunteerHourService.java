@@ -11,8 +11,8 @@ public interface VolunteerHourService {
     List<VolunteerHourSummaryDTO> getFamilyHourSummary(String email);
     public void saveVolunteerHour(String email, VolunteerHourRequest req);
     public List<PendingVolunteerHourDTO> getPendingVolunteerHours();
-    public void updateVolunteerHourStatus(Long id, String action);
-    public void bulkUpdateVolunteerHourStatus(List<Long> ids, String action);
+    public void updateVolunteerHourStatus(Long id, String action, String email);
+    public void bulkUpdateVolunteerHourStatus(List<Long> ids, String action, String email);
     List<VolunteerHourYearlyDTO> getYearlySummary(String name);
 }
 

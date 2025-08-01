@@ -13,6 +13,7 @@ import org.agraharam.model.MatrimonyProfile;
 import org.agraharam.model.User;
 import org.agraharam.repository.MatrimonyProfileRepository;
 import org.agraharam.repository.UserRepository;
+import org.agraharam.service.AuditLogServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,10 +36,17 @@ public class MatrimonyController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private  AuditLogServiceImpl auditLogService;
+
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody MatrimonyProfile profile) {
         profile.setStatus("pending");
         MatrimonyProfile saved = repository.save(profile);
+
+        auditLogService.log("MATRIMONY_REGISTRATION", saved.getContactEmail(), 
+        "MatrimonyProfile", String.valueOf(saved.getId()), 
+        "MATRIMONY_REGISTRATION Submitted by :"+ saved.getContactEmail());
         return ResponseEntity.ok(saved.getId());
     }
 
@@ -60,7 +68,7 @@ public class MatrimonyController {
 
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
+    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body,Principal principal) {
         Long familyId = null;
         if (body != null && body.containsKey("familyId")) {
             Object raw = body.get("familyId");
@@ -76,15 +84,23 @@ public class MatrimonyController {
         if (familyId != null)
             p.setFamilyId(familyId);
         repository.save(p);
+
+        auditLogService.log("APPROVE_MATRIMONY", principal.getName(), 
+        "MatrimonyProfile", String.valueOf(p.getId()), 
+        "APPROVE_MATRIMONY by :"+ principal.getName());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> reject(@PathVariable Long id) {
+    public ResponseEntity<?> reject(@PathVariable Long id,Principal principal) {
         MatrimonyProfile p = repository.findById(id).orElseThrow();
         p.setStatus("rejected");
         repository.save(p);
+
+        auditLogService.log("REJECT_MATRIMONY", principal.getName(), 
+        "MatrimonyProfile", String.valueOf(p.getId()), 
+        "REJECT_MATRIMONY by :"+ principal.getName());
         return ResponseEntity.ok().build();
     }
 

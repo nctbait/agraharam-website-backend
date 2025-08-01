@@ -1,81 +1,74 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+// MatrimonyProfile.jsx
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
 import Navbar from '../components/Navbar';
+import Sidebar from '../components/Sidebar';
 import Footer from '../components/Footer';
-import AdminSidebar from '../components/AdminSidebar';
-import { AuthContext } from '../context/AuthContext';
 
-export default function MatrimonyProfile() {
+const MatrimonyProfile = () => {
   const { id } = useParams();
-  //const { user } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
-
-  const { userRole } = useContext(AuthContext);
-const isAdmin = userRole === 'admin' || userRole === 'superAdmin';
-
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Replace with actual fetch logic
-    const mockProfile = {
-      id,
-      name: 'Sophia Clark',
-      email: 'sophia.clark@email.com',
-      dob: '1990-06-12',
-      status: 'pending', // or 'approved', 'rejected'
-      bio: 'Software engineer who enjoys classical music and yoga.'
-    };
-    setProfile(mockProfile);
+    api.get(`/api/matrimony/${id}`).then(setProfile);
   }, [id]);
-
-  const handleApprove = () => {
-    if (window.confirm('Approve this profile?')) {
-      setProfile(prev => ({ ...prev, status: 'approved' }));
-      // TODO: update backend
-    }
-  };
-
-  const handleReject = () => {
-    if (window.confirm('Reject this profile?')) {
-      setProfile(prev => ({ ...prev, status: 'rejected' }));
-      // TODO: update backend
-    }
-  };
-
-  if (!profile) return <div className="text-center py-20">Loading profile...</div>;
+  if (!profile) return null;
 
   return (
     <>
       <Navbar />
       <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 px-4 lg:px-40 py-6">
-          <h1 className="text-2xl font-bold mb-4">{profile.name}</h1>
+        <Sidebar isOpen={true} />
+        <main className="max-w-4xl mx-auto p-6">
+          <h2 className="text-xl font-bold mb-4">Matrimony Profile Details</h2>
 
-          <div className="bg-white p-6 rounded-xl border border-[#dde0e3]">
-            <p className="mb-2"><strong>Email:</strong> {profile.email}</p>
-            <p className="mb-2"><strong>Date of Birth:</strong> {profile.dob}</p>
-            <p className="mb-2"><strong>Bio:</strong> {profile.bio}</p>
-            <p className="mb-2"><strong>Status:</strong> 
-              <span className={`ml-2 px-3 py-1 rounded-full text-sm ${
-                profile.status === 'approved' ? 'bg-green-100 text-green-800' :
-                profile.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {profile.status}
-              </span>
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div><strong>Name:</strong> {profile.name}</div>
+            <div><strong>Gender:</strong> {profile.gender}</div>
+            <div><strong>DOB(YYYY-MM-DD):</strong> {profile.dateOfBirth}</div>
+            <div><strong>Time of Birth:</strong> {profile.timeOfBirth}</div>
+            <div><strong>Place of Birth:</strong> {profile.placeOfBirth}</div>
+            <div><strong>Nakshatram:</strong> {profile.nakshatram} {profile.paadam} paadam</div>
+            <div><strong>Gothram:</strong> {profile.gothram}</div>
+            <div><strong>Sakha:</strong> {profile.sakha}</div>
+            <div><strong>Vedam:</strong> {profile.vedam}</div>
+            <div><strong>Current Location:</strong> {profile.currentLocation}</div>
+            <div><strong>Willing to  Relocate:</strong> {profile.willingToRelocate}</div>
+            <div><strong>Education:</strong> {profile.education}</div>
+            <div><strong>Occupation:</strong> {profile.occupation}</div>
+            <div><strong>Height:</strong> {profile.height}</div>
+            <div><strong>Immigration Status:</strong> {profile.immigrationStatus}</div>
+            <div><strong>Marital Status:</strong> {profile.maritalStatus}</div>
+            <div><strong>About:</strong> {profile.about}</div>
+            <div><strong>Requirements:</strong> {profile.requirements}</div>
+            <div><strong>Father's Name:</strong> {profile.fatherName}</div>
+            <div><strong>Father's Occupation:</strong> {profile.fatherOccupation}</div>
+            <div><strong>Mother Name:</strong> {profile.motherName}</div>
+            <div><strong>Mother Maiden Name:</strong> {profile.motherMaidenName}</div>
+            <div><strong>Mother's Occupation:</strong> {profile.motherOccupation}</div>
+            <div><strong>Contact Email:</strong> {profile.contactEmail}</div>
+            <div><strong>Contact Phone:</strong> {profile.contactPhone}</div>
+          </div>
 
-            {/* Show Approve/Reject for admins only if status is pending */}
-            {isAdmin && profile.status === 'pending' && (
-              <div className="mt-4 flex gap-4">
-                <button onClick={handleApprove} className="bg-green-600 text-white px-4 py-2 rounded-lg">Approve</button>
-                <button onClick={handleReject} className="bg-red-600 text-white px-4 py-2 rounded-lg">Reject</button>
-              </div>
-            )}
+          {profile.profilePictureUrl && (
+            <div className="mb-6">
+              <img src={profile.profilePictureUrl} alt="Profile" className="h-40 rounded border" />
+            </div>
+          )}
+
+          <div className="flex gap-4">
+            <button onClick={() => navigate('/matrimony-profiles')} className="bg-gray-300 px-4 py-2 rounded">
+              Back
+            </button>
           </div>
         </main>
       </div>
       <Footer />
     </>
   );
-}
+};
+
+export default MatrimonyProfile;
+

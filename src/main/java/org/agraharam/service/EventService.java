@@ -10,6 +10,7 @@ import org.agraharam.model.Event;
 import org.agraharam.model.EventOffering;
 import org.agraharam.model.PricingTier;
 import org.agraharam.repository.EventRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import lombok.Getter;
@@ -21,10 +22,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EventService {
-
-    private final EventRepository eventRepository;
-
-    public void saveEvent(EventRequest request) {
+    @Autowired
+    private EventRepository eventRepository;
+    @Autowired
+    private AuditLogServiceImpl auditLog;
+    public void saveEvent(EventRequest request, String email) {
         Event event = new Event();
         event.setTitle(request.title);
         event.setDescription(request.description);
@@ -66,7 +68,6 @@ public class EventService {
         event.setOfferings(offeringList);
         eventRepository.save(event);
 
-        
-
+        auditLog.log("SAVE_EVENT", email, "Event", String.valueOf(event.getId()),"Saving event with id:"+ event.getId());
     }
 }

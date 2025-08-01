@@ -4,10 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,6 +31,7 @@ public class MatrimonyProfile {
   private String gender;
   private String gothram;
   private String vedam;
+  private String sakha;
   private String maritalStatus;
   private LocalDate dateOfBirth;
   private LocalTime timeOfBirth;
@@ -49,7 +52,12 @@ public class MatrimonyProfile {
   private String contactEmail;
   private String currentLocation;
   private String willingToRelocate;
+  @Lob
+  @Column(name = "about", columnDefinition = "TEXT")
   private String about;
+  @Lob
+  @Column(name = "requirements", columnDefinition = "TEXT")
+  private String requirements;
   private String imageDisplayPreference;
   private String profilePictureUrl;
 

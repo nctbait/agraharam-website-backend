@@ -35,6 +35,8 @@ public class VolunteerHourServiceImpl implements VolunteerHourService {
     private FamilyMemberRepository familyMemberRepo;
     @Autowired
     private EventRepository eventRepo;
+    @Autowired
+    private AuditLogServiceImpl auditLog;
 
     @Override
     public List<VolunteerHourSummaryDTO> getFamilyHourSummary(String email) {
@@ -73,6 +75,7 @@ public class VolunteerHourServiceImpl implements VolunteerHourService {
         }
 
         repository.save(vh);
+        auditLog.log("VOLUNTEER_HOUR", email, "VolunteerHour", String.valueOf(vh.getId()), "Volunteer hour submitted:"+vh.getId());
     }
 
     @Override
@@ -101,19 +104,27 @@ public class VolunteerHourServiceImpl implements VolunteerHourService {
     }
 
     @Override
-    public void updateVolunteerHourStatus(Long id, String action) {
+    public void updateVolunteerHourStatus(Long id, String action, String email) {
         VolunteerHour vh = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid volunteer hour ID"));
 
         vh.setStatus(action.equalsIgnoreCase("approve") ? "approved" : "rejected");
         repository.save(vh);
+        auditLog.log("VOLUNTEER_HOUR_UPDATE", email, "VolunteerHour", 
+        String.valueOf(vh.getId()), "Volunteer hour submitted:"+vh.getId() +" for action:"+action);
+
     }
 
     @Override
-    public void bulkUpdateVolunteerHourStatus(List<Long> ids, String action) {
+    public void bulkUpdateVolunteerHourStatus(List<Long> ids, String action, String email) {
         String newStatus = action.equalsIgnoreCase("approve") ? "approved" : "rejected";
         List<VolunteerHour> records = repository.findAllById(ids);
-        records.forEach(v -> v.setStatus(newStatus));
+        records.forEach(v -> {
+            v.setStatus(newStatus);
+            auditLog.log("VOLUNTEER_HOUR_UPDATE", email, "VolunteerHour", 
+            String.valueOf(v.getId()), "Volunteer hour submitted:"+v.getId() +" for action:"+action);
+
+        });
         repository.saveAll(records);
     }
 
