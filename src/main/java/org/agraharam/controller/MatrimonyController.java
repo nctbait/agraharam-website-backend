@@ -4,15 +4,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.agraharam.model.MatrimonyProfile;
+import org.agraharam.model.User;
 import org.agraharam.repository.MatrimonyProfileRepository;
+import org.agraharam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +32,8 @@ public class MatrimonyController {
 
     @Autowired
     private MatrimonyProfileRepository repository;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody MatrimonyProfile profile) {
@@ -54,7 +60,7 @@ public class MatrimonyController {
 
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false)  Map<String, Object> body) {
+    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body) {
         Long familyId = null;
         if (body != null && body.containsKey("familyId")) {
             Object raw = body.get("familyId");
@@ -63,8 +69,8 @@ public class MatrimonyController {
             } else if (raw instanceof String) {
                 familyId = Long.parseLong((String) raw);
             }
-        }        
-        
+        }
+
         MatrimonyProfile p = repository.findById(id).orElseThrow();
         p.setStatus("approved");
         if (familyId != null)
@@ -85,8 +91,21 @@ public class MatrimonyController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public MatrimonyProfile viewDetails(@PathVariable Long id) {
-       return repository.findById(id).orElseThrow();
+        return repository.findById(id).orElseThrow();
     }
 
+    @GetMapping("/is-eligible")
+    @PreAuthorize("isAuthenticated()")
+    public boolean isEligibleForMatrimonySearch(Principal principal) {
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return repository.existsByFamilyIdAndStatus(user.getFamily().getId(), "approved");
+    }
+
+    @GetMapping("/all-profiles")
+    @PreAuthorize("hasAuthority('user') or hasAuthority('admin') or hasAuthority('superAdmin')")
+    public List<MatrimonyProfile> getAllProfilesForSearch() {
+        return repository.findByStatus("approved");
+    }
 
 }

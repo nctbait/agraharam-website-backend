@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import api from '../api/authAxios';
 import {
   CalendarDaysIcon,
   HeartIcon,
@@ -27,6 +28,27 @@ const links = [
 ];
 
 export default function Sidebar({ isOpen, showDashboardLink = false }) {
+  const [showMatrimonySearch, setShowMatrimonySearch] = useState(false);
+  useEffect(() => {
+    const checkMatrimonyEligibility = async () => {
+      try {
+        const eligible = await api.get('/api/matrimony/is-eligible');
+        setShowMatrimonySearch(eligible === true);
+      } catch (err) {
+        console.error('Failed to check matrimony access', err);
+      }
+    };
+    checkMatrimonyEligibility();
+  }, []);
+
+  const filteredLinks = links.filter(link => {
+    if (link.label === 'Matrimony Search') {
+      return showMatrimonySearch;
+    }
+    return true;
+  });
+
+
   return (
     <aside
       className={`${
@@ -50,7 +72,7 @@ export default function Sidebar({ isOpen, showDashboardLink = false }) {
             </NavLink>
           </li>
         )}
-        {links.map(({ label, icon: Icon, to }) => (
+        {filteredLinks.map(({ label, icon: Icon, to }) => (
           <li key={label}>
             <NavLink
               to={to}

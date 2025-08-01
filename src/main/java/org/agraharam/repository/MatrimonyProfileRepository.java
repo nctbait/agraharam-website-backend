@@ -17,6 +17,11 @@ public interface MatrimonyProfileRepository extends JpaRepository<MatrimonyProfi
     // Optional: for searching based on name/gender/location, etc.
     List<MatrimonyProfile> findByStatusAndNameContainingIgnoreCase(String status, String name);
 
+    boolean existsByFamilyIdAndStatus(Long familyId, String status);
+
+    
+
+
     // Add more query methods as needed for filters/search in the UI
 }
 
