@@ -1,48 +1,62 @@
-import React from 'react';
+// UpcomingEvents.jsx
+import React, { useEffect, useState } from 'react';
+import api from '../api/authAxios';
 
-const events = [
-  {
-    id: 1,
-    title: 'Ugadi Celebrations',
-    date: 'April 5, 2025',
-    location: 'Cary Hindu Temple',
-    isRegistered: false,
-  },
-  {
-    id: 2,
-    title: 'Summer Picnic',
-    date: 'June 22, 2025',
-    location: 'Lake Crabtree Park',
-    isRegistered: true,
-  },
-];
+const UpcomingEvents = () => {
+  const [myEvents, setMyEvents] = useState([]);
+  const [availableEvents, setAvailableEvents] = useState([]);
 
-export default function UpcomingEvents() {
+  useEffect(() => {
+    const fetchData = async () => {
+      const [my, available] = await Promise.all([
+        api.get('/api/event-registrations/my'),
+        api.get('/api/event-registrations/available')
+      ]);
+      setMyEvents(my);
+      setAvailableEvents(available);
+    };
+    fetchData();
+  }, []);
+
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {events.map((event) => (
-          <div
-            key={event.id}
-            className="bg-white rounded-xl shadow overflow-hidden"
-          >
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">{event.title}</h3>
-              <p className="text-sm text-gray-600">{event.date} · {event.location}</p>
-              <button
-                className={`mt-3 w-full h-10 rounded-lg font-semibold text-sm ${
-                  event.isRegistered
-                    ? 'bg-yellow-100 text-yellow-800 cursor-pointer'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                {event.isRegistered ? 'Edit Registration' : 'Register Now'}
-              </button>
-            </div>
+    <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <h2 className="text-lg font-semibold mb-4">Upcoming Events</h2>
+
+      <div className="mb-6">
+        <h3 className="text-md font-bold mb-2">My Event Registrations</h3>
+        {myEvents.length === 0 ? (
+          <p className="text-sm text-gray-500">You have no upcoming registrations.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4">
+            {myEvents.map((e) => (
+              <div key={e.registrationId} className="border rounded p-4 shadow-sm">
+                <h4 className="font-semibold text-blue-700">{e.eventName}</h4>
+                <p className="text-sm text-gray-600">Date: {e.date}</p>
+                <p className="text-xs text-gray-500 mt-1">Status: {e.status}</p>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+      </div>
+
+      <div>
+        <h3 className="text-md font-bold mb-2">Available Events</h3>
+        {availableEvents.length === 0 ? (
+          <p className="text-sm text-gray-500">No new events available for registration.</p>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4">
+            {availableEvents.map((e) => (
+              <div key={e.id} className="border rounded p-4 shadow-sm">
+                <h4 className="font-semibold text-green-700">{e.title}</h4>
+                <p className="text-sm text-gray-600">Date: {e.date}</p>
+                <p className="text-sm text-gray-600">Venue: {e.venue}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default UpcomingEvents;

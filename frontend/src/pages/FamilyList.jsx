@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 import { useNavigate } from 'react-router-dom';
+import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import api from '../api/authAxios';
 
 
@@ -10,6 +11,7 @@ export default function UserFamily() {
   const [spouse, setSpouse] = useState(null);
   const [children, setChildren] = useState([]);
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
 
   useEffect(() => {
@@ -39,8 +41,20 @@ export default function UserFamily() {
     <>
       <Navbar />
       <div className="flex">
-        <Sidebar isOpen={true} showDashboardLink={true} />
-        <main className="flex-1 max-w-4xl mx-auto bg-white shadow p-6 rounded-xl my-6 space-y-6">
+        <Sidebar isOpen={sidebarOpen} showDashboardLink={true} />
+        <div className="flex-1 p-6 space-y-6">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {sidebarOpen ? (
+              <ArrowLeftIcon className="h-5 w-5" />
+            ) : (
+              <Bars3Icon className="h-5 w-5" />
+            )}
+          </button>
+        <div className="flex-1 max-w-4xl mx-auto bg-white shadow p-6 rounded-xl my-6 space-y-6">
           <h2 className="text-2xl font-bold">My Family</h2>
 
           {/* Spouse */}
@@ -95,7 +109,8 @@ export default function UserFamily() {
               </div>
             ))}
           </div>
-        </main>
+        </div>
+        </div>
       </div>
       <Footer />
     </>

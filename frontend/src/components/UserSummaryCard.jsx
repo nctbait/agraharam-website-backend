@@ -1,23 +1,42 @@
-import React from 'react';
+// UserSummaryCard.jsx
+import React, { useEffect, useState } from 'react';
+import api from '../api/authAxios';
 
-export default function UserSummaryCard() {
-  const user = {
-    name: 'Sita Ram',
-    memberId: 'NCTBA1234',
-    membershipType: 'Life Member',
-    email: 'sitaram@example.com',
-    phone: '919-123-4567',
-    avatarUrl: 'https://via.placeholder.com/80',
-  };
+const UserSummaryCard = () => {
+  const [user, setUser] = useState(null);
+  const [membership, setMembership] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const [userRes, membershipRes] = await Promise.all([
+        api.get('/api/family/primary'),
+        api.get('/api/memberships/current')
+      ]);
+      setUser(userRes);
+      setMembership(membershipRes);
+    };
+    fetchData();
+  }, []);
+
+  if (!user) return null;
 
   return (
-    <div className="flex items-center gap-6 bg-white shadow rounded-xl p-6">
-      <div>
-        <h2 className="text-xl font-bold">{user.name}</h2>
-        <p className="text-sm text-gray-600">Membership: {user.membershipType}</p>
-        <p className="text-sm text-gray-600">Email: {user.email}</p>
-        <p className="text-sm text-gray-600">Phone: {user.phone}</p>
+    <div className="bg-white rounded-lg shadow-md p-6 w-full">
+      <h2 className="text-lg font-bold mb-4">Welcome, {user.firstName} {user.lastName}</h2>
+      <div className="text-sm text-gray-700 space-y-1">
+        <div><strong>Email:</strong> {user.email}</div>
+        <div><strong>Phone:</strong> {user.phoneNumber}</div>
+        {membership && (
+          <div>
+            <strong>Membership:</strong> {membership.membershipName} 
+            {membership.startDate && (
+              <span> (from {membership.startDate}{membership.endDate ? ` to ${membership.endDate}` : ''})</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
+
+export default UserSummaryCard;

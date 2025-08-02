@@ -4,7 +4,6 @@ import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import UserSummaryCard from '../components/UserSummaryCard';
-import AnalyticsPanel from '../components/AnalyticsPanel';
 import UpcomingEvents from '../components/UpcomingEvents';
 
 export default function Dashboard() {
@@ -30,7 +29,6 @@ export default function Dashboard() {
             )}
           </button>
           <UserSummaryCard />
-          <AnalyticsPanel />
           <UpcomingEvents />
         </div>
       </div>
