@@ -24,7 +24,6 @@ const links = [
   { label: 'Volunteer Hours', icon: ClockIcon, to: '/volunteer-hours' },
   { label: 'Tax Documents', icon: DocumentTextIcon, to: '/user-tax-docs' },
   { label: 'Matrimony Search', icon: HeartIcon, to: '/matrimony-profiles' },
-  { to: '/notification-center', label: 'Notification Center', icon: BellIcon },
 ];
 
 export default function Sidebar({ isOpen, showDashboardLink = false }) {

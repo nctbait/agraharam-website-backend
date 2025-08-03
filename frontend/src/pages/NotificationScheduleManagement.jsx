@@ -1,111 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import AdminSidebar from '../components/AdminSidebar';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
+import Navbar from '../components/Navbar';
+import AdminSidebar from '../components/AdminSidebar';
+import Footer from '../components/Footer';
 
-export default function NotificationScheduleManagement() {
+const NotificationScheduleManagement = () => {
   const [schedules, setSchedules] = useState([]);
   const navigate = useNavigate();
+
   useEffect(() => {
-    // Replace with real fetch
-    const mockSchedules = [
-      {
-        id: 'event-reminder',
-        label: 'Event Reminder',
-        trigger: 'eventStartDate',
-        timing: '-1 day',
-        channels: ['email'],
-        active: true
-      },
-      {
-        id: 'membership-renewal',
-        label: 'Membership Renewal Reminder',
-        trigger: 'membershipEndDate',
-        timing: '-7 days',
-        channels: ['email', 'sms'],
-        active: true
-      },
-      {
-        id: 'registration-confirmation',
-        label: 'Registration Confirmation',
-        trigger: 'onRegistration',
-        timing: 'immediate',
-        channels: ['email'],
-        active: true
-      }
-    ];
-    setSchedules(mockSchedules);
+    const fetchData = async () => {
+      const res = await api.get('/api/admin/notification-schedules');
+      setSchedules(res || []);
+    };
+    fetchData();
   }, []);
-
-  const handleToggle = (id) => {
-    setSchedules(prev =>
-      prev.map(s =>
-        s.id === id ? { ...s, active: !s.active } : s
-      )
-    );
-  };
-
-  const handleEdit = (id) => {
-    alert(`Edit schedule config for ${id} (coming soon)`);
-  };
 
   return (
     <>
       <Navbar />
       <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 px-4 lg:px-40 py-6">
-          <h1 className="text-2xl font-bold mb-4">Notification Schedule Management</h1>
-          <p className="text-sm text-[#60748a] mb-6">
-            Configure when each notification type is sent and via which channels.
-          </p>
-
-          <div className="overflow-x-auto border border-[#dde0e3] rounded-xl bg-white">
-            <table className="min-w-[700px] w-full text-sm">
-              <thead className="bg-[#f9fafb]">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Type</th>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Trigger Field</th>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Timing</th>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Channels</th>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Active</th>
-                  <th className="px-4 py-3 text-left font-medium text-[#121416]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {schedules.map((s) => (
-                  <tr key={s.id} className="border-t border-[#dde0e3]">
-                    <td className="px-4 py-2">{s.label}</td>
-                    <td className="px-4 py-2">{s.trigger}</td>
-                    <td className="px-4 py-2">{s.timing}</td>
-                    <td className="px-4 py-2">{s.channels.join(', ')}</td>
-                    <td className="px-4 py-2">
-                      <button
-                        onClick={() => handleToggle(s.id)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${s.active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'
-                          }`}
-                      >
-                        {s.active ? 'Active' : 'Inactive'}
-                      </button>
-                    </td>
-                    <td className="px-4 py-2">
-                      <button
-                        onClick={() => navigate(`/edit-notification-schedule/${s.id}`)}
-                        className="text-[#0c77f2] font-medium text-sm"
-                      >
-                        Edit
-                      </button>
-
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <AdminSidebar />
+        <main className="flex-1 max-w-6xl mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-xl font-bold">Notification Schedule Management</h1>
+            <button
+              onClick={() => navigate('/edit-notification-schedule/new')}
+              className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold"
+            >
+              + Create New Schedule
+            </button>
           </div>
+
+          <table className="w-full border text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border px-4 py-2 text-left">Template</th>
+                <th className="border px-4 py-2 text-left">Trigger</th>
+                <th className="border px-4 py-2 text-left">Timing</th>
+                <th className="border px-4 py-2 text-left">Condition</th>
+                <th className="border px-4 py-2 text-left">Status</th>
+                <th className="border px-4 py-2 text-left">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedules.map((s) => (
+                <tr key={s.id}>
+                  <td className="border px-4 py-2">{s.template?.title || '—'}</td>
+                  <td className="border px-4 py-2">{s.triggerType}</td>
+                  <td className="border px-4 py-2">{s.timingOffset}</td>
+                  <td className="border px-4 py-2 text-gray-600">
+                    {s.targetCondition?.substring(0, 50) || '—'}
+                    {s.targetCondition?.length > 50 && '...'}
+                  </td>
+                  <td className="border px-4 py-2">
+                    <span className={`inline-block px-2 py-1 rounded text-xs ${s.active ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-600'}`}>
+                      {s.active ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="border px-4 py-2">
+                    <button
+                      onClick={() => navigate(`/edit-notification-schedule/${s.id}`)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {schedules.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="text-center py-4 text-gray-500">No schedules found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <div className="flex justify-between flex-wrap gap-4 mt-6">
+                        <button
+                            onClick={() => navigate('/admin/notification-management')}
+                            className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold"
+                        >
+                            Manage Notification Templates
+                        </button>
+
+                    </div>
         </main>
       </div>
       <Footer />
     </>
   );
-}
+};
+
+export default NotificationScheduleManagement;

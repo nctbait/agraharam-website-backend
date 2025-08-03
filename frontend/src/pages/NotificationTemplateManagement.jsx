@@ -1,19 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
 
 export default function NotificationTemplateManagement() {
     const navigate = useNavigate();
 
-    const templates = [
-        { id: 'registration-confirmation', label: 'Registration Confirmation' },
-        { id: 'event-reminder', label: 'Event Reminder' },
-        { id: 'membership-renewal', label: 'Membership Renewal' },
-        { id: 'transaction-receipt', label: 'Financial Transaction Receipt' },
-        { id: 'general-announcement', label: 'General Announcement' }
-    ];
+    const [templates, setTemplates] = useState([]);
+
+    useEffect(() => {
+        api.get('/api/admin/notification-templates').then(setTemplates);
+    }, []);
+
 
     return (
         <>
@@ -28,6 +28,16 @@ export default function NotificationTemplateManagement() {
                         </p>
                     </div>
 
+                    <div className="mb-4 text-right">
+                        <button
+                            onClick={() => navigate('/edit-notification-template/new')}
+                            className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold"
+                        >
+                            + Add New Template
+                        </button>
+                    </div>
+
+
                     <div className="overflow-x-auto border border-[#dde0e3] rounded-xl bg-white mb-6">
                         <table className="min-w-[500px] w-full text-sm">
                             <thead className="bg-[#f9fafb]">
@@ -37,9 +47,12 @@ export default function NotificationTemplateManagement() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {templates.map((tpl) => (
+                                {templates.map(tpl => (
                                     <tr key={tpl.id} className="border-t border-[#dde0e3]">
-                                        <td className="px-4 py-2 text-[#121416]">{tpl.label}</td>
+                                        <td className="px-4 py-2 text-[#121416]">
+                                            <div className="font-semibold">{tpl.title}</div>
+                                            <div className="text-xs text-gray-500">{tpl.type} • {tpl.channel}</div>
+                                        </td>
                                         <td className="px-4 py-2">
                                             <button
                                                 onClick={() => navigate(`/edit-notification-template/${tpl.id}`)}
@@ -50,6 +63,7 @@ export default function NotificationTemplateManagement() {
                                         </td>
                                     </tr>
                                 ))}
+
                             </tbody>
                         </table>
                     </div>

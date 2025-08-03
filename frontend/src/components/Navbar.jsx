@@ -1,13 +1,31 @@
-import React, { useContext } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useContext, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import LogoutButton from '../components/LogoutButton';
-
+import api from '../api/authAxios';
+import { BellIcon } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
   const { userRole, logout } = useContext(AuthContext);
-
+  const [hasNotifications, setHasNotifications] = useState(false);
   const isLoggedIn = userRole !== 'guest';
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        const res = await api.get('/api/notifications/unread-count');
+        setHasNotifications(res.count > 0);
+      } catch (e) {
+        console.error('Failed to fetch notifications', e);
+      }
+    };
+
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 30000); // poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="border-b border-gray-200 bg-white sticky top-0 z-30">
@@ -24,17 +42,31 @@ export default function Navbar() {
           <Link className="text-sm font-medium" to="/committees">Committees</Link>
           <Link className="text-sm font-medium" to="/matrimony_reg">Matrimony</Link>
           <Link className="text-sm font-medium" to="/donate">Donate</Link>
-          { (userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
+          {(userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
             <Link className="text-sm font-medium" to="/dashboard">Dashboard</Link>
           )}
           {(userRole === 'admin' || userRole === 'superAdmin') && (
             <Link className="text-sm font-medium" to="/admin-dashboard">Admin Dashboard</Link>
           )}
-
         </nav>
 
         {/* Desktop Buttons */}
-        <div className="hidden lg:flex gap-2">
+        <div className="hidden lg:block relative">
+          {(userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
+            <div className="relative">
+              <button
+                onClick={() => navigate('/notification-center')}
+                className="relative"
+                aria-label="Notifications"
+              >
+                <BellIcon className="h-6 w-6 text-gray-700" />
+                {hasNotifications && (
+                  <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full" />
+                )}
+              </button>
+            </div>
+          )}
+
           {!isLoggedIn ? (
             <>
               <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Register</Link>
@@ -46,6 +78,22 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Hamburger */}
+        {isLoggedIn && (
+          <div className="lg:hidden relative mr-2">
+            <button
+              onClick={() => navigate('/notification-center')}
+              className="relative"
+              aria-label="Notifications"
+            >
+              <BellIcon className="h-6 w-6 text-gray-700" />
+              {hasNotifications && (
+                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full" />
+              )}
+            </button>
+          </div>
+        )}
+
+
         <button
           className="lg:hidden p-2"
           onClick={() => document.getElementById('mobileMenu').classList.toggle('hidden')}
@@ -57,6 +105,7 @@ export default function Navbar() {
             <span className="block w-6 h-0.5 bg-black"></span>
           </div>
         </button>
+
       </div>
 
       {/* Mobile Menu */}
@@ -67,13 +116,12 @@ export default function Navbar() {
           <li><Link to="/committees" className="block text-sm font-medium">Committees</Link></li>
           <li><Link to="/matrimony_reg" className="block text-sm font-medium">Matrimony</Link></li>
           <li><Link to="/donate" className="block text-sm font-medium">Donate</Link></li>
-          { (userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
+          {(userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
             <li><Link to="/dashboard" className="block text-sm font-medium">Dashboard</Link></li>
           )}
           {(userRole === 'admin' || userRole === 'superAdmin') && (
             <li><Link to="/admin-dashboard" className="block text-sm font-medium">Admin Dashboard</Link></li>
           )}
-
         </ul>
         <div className="mt-3 flex gap-2">
           {!isLoggedIn ? (

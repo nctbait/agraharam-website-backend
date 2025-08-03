@@ -3,56 +3,46 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
+import api from '../api/authAxios';
+
 
 export default function EditNotificationTemplate() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [template, setTemplate] = useState({ subject: '', body: '' });
+  const isNew = id === 'new';
+
+  const [formData, setFormData] = useState({
+    title: '',
+    type: '',
+    channel: '',
+    subject: '',
+    body: '',
+    active: ''
+  });
 
   useEffect(() => {
-    // Simulate fetch
-    const mockTemplates = {
-      'registration-confirmation': {
-        subject: 'Welcome to NCTBA!',
-        body: 'Dear {name},\n\nThank you for registering with us. We are excited to have you onboard.\n\nBest,\nNCTBA Team'
-      },
-      'event-reminder': {
-        subject: 'Reminder: Upcoming Event - {event}',
-        body: 'Hi {name},\n\nJust a reminder that {event} is happening on {date}. We look forward to seeing you!\n\nRegards,\nNCTBA Team'
-      },
-      'membership-renewal': {
-        subject: 'Renew Your NCTBA Membership',
-        body: 'Hello {name},\n\nYour membership is about to expire. Please renew by {date} to continue enjoying member benefits.\n\nThank you!'
-      },
-      'transaction-receipt': {
-        subject: 'Payment Confirmation - NCTBA',
-        body: 'Hi {name},\n\nWe have received your payment of ₹{amount}. Transaction ID: {txnId}.\n\nThank you for supporting NCTBA.'
-      },
-      'general-announcement': {
-        subject: 'Latest Update from NCTBA',
-        body: 'Dear Member,\n\n{announcement}\n\nRegards,\nNCTBA Admin'
-      }
-    };
-
-    if (mockTemplates[id]) {
-      setTemplate(mockTemplates[id]);
-    } else {
-      setTemplate({ subject: '', body: '' });
+    if (!isNew) {
+      api.get(`/api/admin/notification-templates/${id}`).then(setFormData);
     }
   }, [id]);
 
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setTemplate((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    console.log('Saved template:', { id, ...template });
-    // TODO: Save to backend
-    navigate('/notification-template-management');
+    if (isNew) {
+      await api.post('/api/admin/notification-templates', formData);
+    } else {
+      await api.put(`/api/admin/notification-templates/${id}`, formData);
+    }
+    navigate('/admin/notification-management');
   };
+
 
   return (
     <>
@@ -65,30 +55,76 @@ export default function EditNotificationTemplate() {
               Edit Template: {id.replace(/-/g, ' ')}
             </h1>
             <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <label>
-                <span className="text-base font-medium">Subject</span>
-                <input
-                  name="subject"
-                  value={template.subject}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full h-12 rounded-lg border border-[#dde0e3] px-4"
-                  required
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Body</span>
-                <textarea
-                  name="body"
-                  value={template.body}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full min-h-[200px] rounded-lg border border-[#dde0e3] px-4 py-2 font-mono text-sm"
-                  required
-                />
-              </label>
+              <input
+                placeholder="Subject Line"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                className="form-input mt-2 w-full h-12 rounded-lg border border-[#dde0e3] px-4"
+                required
+              />
+              <input
+                placeholder="Title for Admin purpose"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                className="form-input mt-2 w-full h-12 rounded-lg border border-[#dde0e3] px-4"
+                required
+              />
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="form-select"
+                required
+              >
+                <option value="">-- Notification Reason --</option>
+                <option value="registration">User Registration</option>
+                <option value="registration">User Registration Approval</option>
+                <option value="registration">Matrimony Registration Approval</option>
+                <option value="eventReminder">Event Reminders for Registration</option>
+                <option value="eventReminder">Event Reminder for Registered Users</option>
+                <option value="paymentSuccess">Payment Success</option>
+                <option value="membershipRenewal">Membership Renewal</option>
+                <option value="membershipRenewal">Volunteer Hour Approval</option>
+                <option value="membershipRenewal">Membership Upgrade</option>
+                <option value="membershipRenewal">Bill Approval</option>
+                <option value="membershipRenewal">Task Assigned</option>
+                <option value="membershipRenewal">Tax Document Generated</option>
+              </select>
+              <select
+                name="channel"
+                value={formData.channel}
+                onChange={handleChange}
+                className="form-select"
+                required
+              >
+                <option value="">-- Communitcation Channel --</option>
+                <option value="inApp">In-App Notification</option>
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+              </select>
+              <textarea
+                name="body"
+                rows="5"
+                placeholder="Notification Body (can include variables like {name})"
+                value={formData.body}
+                onChange={handleChange}
+                className="w-full border rounded px-3 py-2"
+              />
+              <select
+                name="active"
+                value={formData.active}
+                onChange={handleChange}
+                className="form-select"
+              >
+                <option value="true">Activate Template</option>
+                <option value="false">Deactivate Template</option>
+              </select>
               <div className="flex justify-between pt-4">
                 <button
                   type="button"
-                  onClick={() => navigate('/notification-template-management')}
+                  onClick={() => navigate('/admin/notification-management')}
                   className="rounded-full h-10 px-6 bg-gray-300 text-[#121416] text-sm font-medium"
                 >
                   Cancel

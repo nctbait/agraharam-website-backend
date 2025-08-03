@@ -39,7 +39,6 @@ export default function AdminSidebar() {
     { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
     { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
-    { to: '/notification-center', label: 'Notification Center', icon: BellIcon }
   ];
 
   const linksToShow = role === 'superAdmin' ? [...adminLinks, ...superAdminLinks] : adminLinks;

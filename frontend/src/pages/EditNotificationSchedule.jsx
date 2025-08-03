@@ -1,63 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
 import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
+import Footer from '../components/Footer';
 
-export default function EditNotificationSchedule() {
-  const { id } = useParams();
+const EditNotificationSchedule = () => {
+  const { id } = useParams(); // id can be 'new' or an actual ID
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    label: '',
+  const [formData, setFormData] = useState({
+    templateId: '',
     trigger: '',
     timing: '',
-    channels: [],
+    typeOfTiming: '',
+    targetCondition: '',
     active: true
   });
+  const [templates, setTemplates] = useState([]);
 
   useEffect(() => {
-    // Replace with API fetch
-    const mockSchedules = {
-      'event-reminder': {
-        label: 'Event Reminder',
-        trigger: 'eventStartDate',
-        timing: '-1 day',
-        channels: ['email'],
-        active: true
-      },
-      'membership-renewal': {
-        label: 'Membership Renewal',
-        trigger: 'membershipEndDate',
-        timing: '-7 days',
-        channels: ['email', 'sms'],
-        active: true
+    const fetchTemplates = async () => {
+      const result = await api.get('/api/admin/notification-templates');
+      setTemplates(result);
+    };
+
+    const fetchData = async () => {
+      if (id !== 'new') {
+        
+        const result = await api.get(`/api/admin/notification-schedules/${id}`);
+        console.log(result);
+        setFormData({
+          templateId: result.template.id,
+          trigger: result.triggerType,
+          timing: result.timingOffset.replace(/[^0-9-]/g, ''),
+          typeOfTiming: result.typeOfTiming,
+          targetCondition: result.targetCondition || '',
+          active: result.active
+        });
       }
     };
 
-    if (mockSchedules[id]) {
-      setForm(mockSchedules[id]);
-    }
+    fetchTemplates();
+    fetchData();
   }, [id]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleToggleChannel = (channel) => {
-    setForm((prev) => ({
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      channels: prev.channels.includes(channel)
-        ? prev.channels.filter((c) => c !== channel)
-        : [...prev.channels, channel]
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Saved schedule config:', { id, ...form });
-    // TODO: Save to backend
+  const handleSave = async () => {
+    const payload = {
+      template: { id: formData.templateId },
+      triggerType: formData.trigger,
+      timingOffset: `${formData.timing}`,
+      typeOfTiming: formData.typeOfTiming,
+      targetCondition: formData.targetCondition,
+      active: formData.active
+    };
+
+    if (id === 'new') {
+      await api.post('/api/admin/notification-schedules', payload);
+    } else {
+      await api.put(`/api/admin/notification-schedules/${id}`, payload);
+    }
     navigate('/notification-schedule');
   };
 
@@ -65,84 +74,96 @@ export default function EditNotificationSchedule() {
     <>
       <Navbar />
       <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 flex flex-col items-center px-4 lg:px-40 py-6">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow p-6 border border-[#dde0e3]">
-            <h1 className="text-2xl font-bold mb-6 capitalize">Edit Schedule: {form.label}</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <AdminSidebar />
+        <main className="flex-1 max-w-3xl mx-auto px-4 py-8">
+          <h1 className="text-xl font-bold mb-6">
+            {id === 'new' ? 'Create Notification Schedule' : 'Edit Notification Schedule'}
+          </h1>
 
-              <label>
-                <span className="text-base font-medium">Trigger Field</span>
-                <select
-                  name="trigger"
-                  value={form.trigger}
-                  onChange={handleChange}
-                  className="form-select mt-2 w-full h-12 rounded-lg border border-[#dde0e3] px-4"
-                >
-                  <option value="">Select</option>
-                  <option value="eventStartDate">Event Start Date</option>
-                  <option value="membershipEndDate">Membership End Date</option>
-                  <option value="onRegistration">On Registration</option>
-                  <option value="onPayment">On Payment</option>
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-sm font-medium">Template</span>
+              <select name="templateId" value={formData.templateId} onChange={handleChange} className="form-select w-full">
+                <option value="">-- Select Template --</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-medium">Trigger</span>
+              <select name="trigger" value={formData.trigger} onChange={handleChange} className="form-select w-full">
+                <option value="">-- Select Trigger --</option>
+                <option value="eventStartDate">Event Start Date</option>
+                <option value="membershipRenewal">Membership Renewal</option>
+                <option value="onRegistration">On Registration</option>
+                <option value="paymentReceived">Payment Received</option>
+              </select>
+            </label>
+
+            <div className="flex gap-4">
+              <label className="w-1/2">
+                <span className="text-sm font-medium">Offset Value</span>
+                <input type="number" name="timing" value={formData.timing} onChange={handleChange} className="form-input w-full" />
+              </label>
+              <label className="w-1/2">
+                <span className="text-sm font-medium">Offset Unit</span>
+                <select name="typeOfTiming" value={formData.typeOfTiming} onChange={handleChange} className="form-select w-full">
+                  <option value="">-- Select --</option>
+                  <option value="days">Days</option>
+                  <option value="hours">Hours</option>
+                  <option value="minutes">Minutes</option>
                 </select>
               </label>
+            </div>
 
-              <label>
-                <span className="text-base font-medium">Timing</span>
-                <input
-                  name="timing"
-                  value={form.timing}
-                  onChange={handleChange}
-                  placeholder="-1 day, -7 days, immediate"
-                  className="form-input mt-2 w-full h-12 rounded-lg border border-[#dde0e3] px-4"
-                />
-              </label>
+            <label className="block">
+              <span className="text-sm font-medium">Target Condition (optional)</span>
+              <textarea
+                name="targetCondition"
+                value={formData.targetCondition}
+                onChange={handleChange}
+                rows={3}
+                className="form-textarea w-full"
+                placeholder='e.g., {"membershipType": "life"}'
+              />
+            </label>
 
-              <div>
-                <p className="text-base font-medium mb-2">Channels</p>
-                <div className="flex gap-4">
-                  {['email', 'sms'].map((channel) => (
-                    <label key={channel} className="inline-flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={form.channels.includes(channel)}
-                        onChange={() => handleToggleChannel(channel)}
-                      />
-                      {channel.toUpperCase()}
-                    </label>
-                  ))}
-                </div>
-              </div>
+            <label className="inline-flex items-center mt-4">
+              <input type="checkbox" name="active" checked={formData.active} onChange={handleChange} className="mr-2" />
+              <span className="text-sm">Active</span>
+            </label>
 
-              <label className="flex items-center gap-2 mt-2">
-                <input
-                  type="checkbox"
-                  checked={form.active}
-                  onChange={() => setForm((prev) => ({ ...prev, active: !prev.active }))}
-                />
-                <span className="text-base font-medium">Active</span>
-              </label>
+            <div className="mt-6">
+              <button onClick={handleSave} className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold">
+                Save
+              </button>
+              <button
+                onClick={() => navigate('/notification-schedule')}
+                className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold"
+              >
+                Manage Schedule
+              </button>
+              <button
+                onClick={() => navigate('/admin/notification-management')}
+                className="rounded-full h-10 px-6 bg-[#f1f2f4] text-[#121416] text-sm font-bold"
+              >
+                Manage Notification Templates
+              </button>
+            </div>
+            <div className="flex justify-between flex-wrap gap-4 mt-6">
 
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={() => navigate('/notification-schedule')}
-                  className="rounded-full h-10 px-6 bg-gray-300 text-[#121416] text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
+
+            </div>
           </div>
         </main>
       </div>
       <Footer />
     </>
   );
-}
+};
+
+export default EditNotificationSchedule;
