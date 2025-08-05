@@ -57,6 +57,8 @@ import AdminBillApprovals from './pages/AdminBillApprovals';
 import VolunteerInterest from './pages/VolunteerInterest';
 import AdminVolunteerHourApprovals from './pages/AdminVolunteerHourApproval';
 import MatrimonyApprovalDetails from './pages/MatrimonyApprovalDetails';
+import AdminVolunteerSearch from './pages/AdminVolunteerSearch';
+import AdminAuditLogs from './pages/AdminAuditLogs';
 
 function App() {
   //useAutoLogout();
@@ -79,10 +81,28 @@ function App() {
       <Route path="/terms" element={<TermsAndConditions />} />
 
       <Route
+        path="/admin/audit-logs"
+        element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
+            <AdminAuditLogs />
+          </ProtectedRoute>
+        }
+      />
+
+<Route
         path="/volunteer-interest"
         element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
             <VolunteerInterest />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/volunteer-search"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminVolunteerSearch />
           </ProtectedRoute>
         }
       />

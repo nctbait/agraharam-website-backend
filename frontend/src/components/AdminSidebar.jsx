@@ -10,7 +10,7 @@ import {
   ChartBarIcon,
   CalendarIcon,
   Cog6ToothIcon,
-  CurrencyDollarIcon,ClockIcon
+  CurrencyDollarIcon,ClockIcon,
 } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 
@@ -19,12 +19,12 @@ export default function AdminSidebar() {
   const role = user?.userRole;
 
   const superAdminLinks = [
-    //{ to: '/admin/roles', label: 'Roles & Permissions', icon: ShieldCheckIcon },
     { to: '/admin/user-roles', label: 'User Role Management', icon: UsersIcon },
     { to: '/admin/approvals', label: 'Registration Approvals', icon: ClipboardDocumentListIcon },
-    //{ to: '/admin/audit-logs', label: 'Audit Logs', icon: DocumentTextIcon },
-    { to: '/admin/settings', label: 'Website Settings', icon: Cog6ToothIcon },
+    { to: '/admin/audit-logs', label: 'Audit Logs', icon: DocumentTextIcon },
     { to: '/admin/notification-management', label: 'Notification Templates', icon: BellIcon },
+    { to: '/admin/settings', label: 'Website Settings', icon: Cog6ToothIcon },
+   
   ];
 
   const adminLinks = [
@@ -37,6 +37,7 @@ export default function AdminSidebar() {
     { to: '/admin/tasks', label: 'Manage Tasks', icon: ClipboardDocumentListIcon },
     { to: '/admin/volunteer-hour-approval', label: 'Volunteer Hours Approval', icon: ClockIcon },
     { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
+    { to: '/volunteer-search', label: 'Volunteer Search', icon: UsersIcon },
     { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
   ];

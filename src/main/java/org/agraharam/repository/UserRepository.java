@@ -3,6 +3,7 @@ package org.agraharam.repository;
 import java.util.List;
 import java.util.Optional;
 
+import org.agraharam.enums.Role;
 import org.agraharam.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -30,4 +31,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
        "LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))")
     List<User> searchByNameOrEmail(@Param("query") String query);
 
+    Optional<User> findByFamilyIdAndRole(Long familyId, Role role);
 }

@@ -40,15 +40,15 @@ public class NotificationTemplateController {
 
     @PostMapping
     public NotificationTemplate create(@RequestBody NotificationTemplate template, Principal p) {
-        NotificationTemplate nTemplate = templateRepository.save(template);
+        NotificationTemplate saved = templateRepository.save(template);
         audit.log("NOTIFICATION_TEMPLATE_CREATED", p.getName(), "NotificationTemplate",
-                String.valueOf(nTemplate.getId()), "Notification Template Created with title:" + nTemplate.getTitle());
-        return nTemplate;
+                String.valueOf(saved.getId()), "Notification Template Created with title:" + saved.getTitle());
+        return saved;
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<NotificationTemplate> update(@PathVariable Long id,
-            @RequestBody NotificationTemplate updated,Principal p) {
+            @RequestBody NotificationTemplate updated, Principal p) {
         NotificationTemplate existing = templateRepository.findById(id).orElse(null);
         existing.setTitle(updated.getTitle());
         existing.setType(updated.getType());
@@ -56,17 +56,18 @@ public class NotificationTemplateController {
         existing.setSubject(updated.getSubject());
         existing.setBody(updated.getBody());
         existing.setActive(updated.isActive());
+        existing.setVariables(updated.getVariables());
         templateRepository.save(existing);
         audit.log("NOTIFICATION_TEMPLATE_UPDATE", p.getName(), "NotificationTemplate",
-        String.valueOf(existing.getId()), "Notification Template Updated with title:" + existing.getTitle());
+                String.valueOf(existing.getId()), "Notification Template Updated with title:" + existing.getTitle());
         return ResponseEntity.ok(existing);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id,Principal p) {
+    public void delete(@PathVariable Long id, Principal p) {
         NotificationTemplate existing = templateRepository.findById(id).orElse(null);
         audit.log("NOTIFICATION_TEMPLATE_DELETE", p.getName(), "NotificationTemplate",
-        String.valueOf(id), "Notification Template Updated with title:" + existing.getTitle());
+                String.valueOf(id), "Notification Template Updated with title:" + existing.getTitle());
         templateRepository.deleteById(id);
     }
 }

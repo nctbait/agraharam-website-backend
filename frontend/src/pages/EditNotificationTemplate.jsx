@@ -18,7 +18,8 @@ export default function EditNotificationTemplate() {
     channel: '',
     subject: '',
     body: '',
-    active: ''
+    active: '',
+    variables: []  // <-- Add this
   });
 
   useEffect(() => {
@@ -26,6 +27,30 @@ export default function EditNotificationTemplate() {
       api.get(`/api/admin/notification-templates/${id}`).then(setFormData);
     }
   }, [id]);
+
+  const handleVariableChange = (index, field, value) => {
+    const updated = [...formData.variables];
+    updated[index][field] = value;
+    setFormData(prev => ({ ...prev, variables: updated }));
+  };
+
+  const addVariable = () => {
+    setFormData(prev => ({
+      ...prev,
+      variables: [...prev.variables, { name: '', source: '' }]
+    }));
+  };
+
+  const removeVariable = (index) => {
+    const updated = [...formData.variables];
+    updated.splice(index, 1);
+    setFormData(prev => ({ ...prev, variables: updated }));
+  };
+
+  const extractPlaceholders = (text) => {
+    const matches = text.match(/{(.*?)}/g) || [];
+    return matches.map(v => v.replace(/[{}]/g, ''));
+  };
 
 
   const handleChange = (e) => {
@@ -35,6 +60,15 @@ export default function EditNotificationTemplate() {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    const placeholders = extractPlaceholders(formData.body);
+    const mappedVars = (formData.variables || []).map(v => v.name);
+
+    const missing = placeholders.filter(p => !mappedVars.includes(p));
+    if (missing.length > 0) {
+      alert(`Missing variable mapping(s) for: ${missing.join(', ')}`);
+      return;
+    }
+
     if (isNew) {
       await api.post('/api/admin/notification-templates', formData);
     } else {
@@ -79,18 +113,18 @@ export default function EditNotificationTemplate() {
                 required
               >
                 <option value="">-- Notification Reason --</option>
-                <option value="registration">User Registration</option>
-                <option value="registration">User Registration Approval</option>
-                <option value="registration">Matrimony Registration Approval</option>
-                <option value="eventReminder">Event Reminders for Registration</option>
-                <option value="eventReminder">Event Reminder for Registered Users</option>
+                <option value="userRegistration">User Registration</option>
+                <option value="userApproval">User Registration Approval</option>
+                <option value="matrimonyApproval">Matrimony Registration Approval</option>
+                <option value="eventUpcomingAll">Event Reminders for Registration</option>
+                <option value="eventUpcomingRegistered">Event Reminder for Registered Users</option>
                 <option value="paymentSuccess">Payment Success</option>
                 <option value="membershipRenewal">Membership Renewal</option>
-                <option value="membershipRenewal">Volunteer Hour Approval</option>
-                <option value="membershipRenewal">Membership Upgrade</option>
-                <option value="membershipRenewal">Bill Approval</option>
-                <option value="membershipRenewal">Task Assigned</option>
-                <option value="membershipRenewal">Tax Document Generated</option>
+                <option value="volunteerHourApproved">Volunteer Hour Approval</option>
+                <option value="membershipUpgrade">Membership Upgrade</option>
+                <option value="billApproved">Bill Approval</option>
+                <option value="taskAssigned">Task Assigned</option>
+                <option value="taxDocumentGenerated">Tax Document Generated</option>
               </select>
               <select
                 name="channel"
@@ -112,6 +146,35 @@ export default function EditNotificationTemplate() {
                 onChange={handleChange}
                 className="w-full border rounded px-3 py-2"
               />
+
+              <div className="mt-6 border p-4 rounded">
+                <h3 className="font-semibold mb-2">Variable Mappings</h3>
+                {formData.variables.map((v, index) => (
+                  <div key={index} className="flex gap-4 mb-2">
+                    <input
+                      type="text"
+                      className="form-input flex-1"
+                      placeholder="Variable name (e.g., eventName)"
+                      value={v.name}
+                      onChange={e => handleVariableChange(index, 'name', e.target.value)}
+                    />
+                    <input
+                      type="text"
+                      className="form-input flex-1"
+                      placeholder="Source (e.g., event.title)"
+                      value={v.source}
+                      onChange={e => handleVariableChange(index, 'source', e.target.value)}
+                    />
+                    <button onClick={(e) => { e.preventDefault(); removeVariable(index); }} className="text-red-500 font-bold">
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button onClick={(e) => { e.preventDefault(); addVariable(); }} className="mt-2 text-sm text-blue-600">
+                  + Add Variable
+                </button>
+              </div>
+
               <select
                 name="active"
                 value={formData.active}

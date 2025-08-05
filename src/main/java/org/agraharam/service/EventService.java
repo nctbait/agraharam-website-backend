@@ -70,4 +70,6 @@ public class EventService {
 
         auditLog.log("SAVE_EVENT", email, "Event", String.valueOf(event.getId()),"Saving event with id:"+ event.getId());
     }
+
+    
 }

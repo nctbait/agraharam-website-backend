@@ -4,6 +4,7 @@ import org.agraharam.repository.FamilyRepository;
 import org.agraharam.repository.UserRepository;
 import org.agraharam.service.AuditLogServiceImpl;
 import org.agraharam.service.EmailService;
+import org.agraharam.service.NotificationDispatcher;
 import org.agraharam.repository.PasswordRepository;
 import org.agraharam.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,9 @@ public class RegistrationController {
   @Autowired UserRepository userRepo;
   @Autowired AddressRepository addressRepo;
   @Autowired PasswordRepository passwordRepo;
-  @Autowired EmailService emailService;
+  //@Autowired EmailService emailService;
   @Autowired AuditLogServiceImpl auditLog;
+  @Autowired NotificationDispatcher dispatcher;
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody UserRegistrationRequest req) {
@@ -54,7 +56,8 @@ public class RegistrationController {
     Password pwd = new Password(primary, hashPassword(req.password));
     primary.setPassword(pwd);
     userRepo.save(primary);
-    emailService.sendRegistrationNotice(primary.getFirstName(), req.lastName);
+    //emailService.sendRegistrationNotice(primary.getFirstName(), req.lastName);
+    dispatcher.dispatch("userRegistration", primary);
     auditLog.log("REGISTER", req.email, "User", String.valueOf(primary.getId()), "Registertion of user submitted: "+primary.getId() );
     return ResponseEntity.ok("Registered");
   }

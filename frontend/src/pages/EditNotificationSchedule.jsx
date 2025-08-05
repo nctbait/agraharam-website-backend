@@ -100,6 +100,7 @@ const EditNotificationSchedule = () => {
                 <option value="eventStartDate">Event Start Date</option>
                 <option value="membershipRenewal">Membership Renewal</option>
                 <option value="onRegistration">On Registration</option>
+                <option value="onEventRegistration">On Event Registration</option>
                 <option value="paymentReceived">Payment Received</option>
               </select>
             </label>

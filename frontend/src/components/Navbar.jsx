@@ -11,7 +11,6 @@ export default function Navbar() {
   const isLoggedIn = userRole !== 'guest';
   const navigate = useNavigate();
 
-
   useEffect(() => {
     const checkNotifications = async () => {
       try {
@@ -23,7 +22,7 @@ export default function Navbar() {
     };
 
     checkNotifications();
-    const interval = setInterval(checkNotifications, 30000); // poll every 30s
+    const interval = setInterval(checkNotifications, 300000); // poll every 30s
     return () => clearInterval(interval);
   }, []);
 
