@@ -1,129 +1,150 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import AsyncSelect from 'react-select/async';
+import api from '../api/authAxios';
+import AdminSidebar from '../components/AdminSidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import AdminSidebar from '../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 
-export default function CreateTask() {
-  const navigate = useNavigate();
+const CreateTask = () => {
   const [form, setForm] = useState({
     name: '',
     description: '',
-    assignedTo: '',
-    status: '',
-    event: '',
-    deadline: ''
+    status: 'PENDING',
+    deadline: '',
+    assignedTo: null,
+    eventId: ''
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const [eventOptions, setEventOptions] = useState([]);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get('/api/events/upcoming')
+      .then(res => {
+        const data = res || [];
+        const options = data.map(event => ({
+          value: event.id,
+          label: `${event.title} - ${event.date}`
+        }));
+        setEventOptions(options);
+      })
+      .catch(err => {
+        console.error('Failed to load event options:', err);
+        setEventOptions([]);
+      });
+  }, []);
+
+  const loadUserOptions = (inputValue, callback) => {
+    api.get(`/api/family/user-search?query=${inputValue}`)
+      .then(res => {
+        const options = res.map(user => ({
+          value: user.id,
+          label: `${user.firstName} ${user.lastName} (${user.email})`
+        }));
+        callback(options);
+      });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('New Task:', form);
-    // TODO: Send to backend
-    navigate('/manage-tasks');
+    setError(null);
+    const payload = {
+      ...form,
+      assignedToId: form.assignedTo?.value || null,
+      eventId: form.eventId || null
+    };
+    try {
+      await api.post('/api/tasks', payload);
+      navigate('/admin/tasks');
+    } catch (err) {
+      console.error('Task creation failed:', err);
+      setError('Failed to create task. Please try again.');
+    }
   };
 
   return (
-    <>
-      <Navbar />
-      <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 flex flex-col items-center px-4 lg:px-20 py-6">
-          <div className="w-full max-w-xl bg-white rounded-xl shadow p-4">
-            <h1 className="text-2xl font-bold mb-6">Create Task</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <label>
-                <span className="text-base font-medium">Task Name</span>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Enter task name"
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Description</span>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  placeholder="Enter task description"
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 min-h-24"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Assigned User</span>
-                <select
-                  name="assignedTo"
-                  value={form.assignedTo}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                >
-                  <option value="">Select user</option>
-                  <option value="volunteer1">Volunteer 1</option>
-                  <option value="admin1">Admin 1</option>
-                  <option value="superadmin1">Super Admin 1</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Status</span>
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                >
-                  <option value="">Select status</option>
-                  <option value="todo">To Do</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Event (Optional)</span>
-                <input
-                  name="event"
-                  value={form.event}
-                  onChange={handleChange}
-                  placeholder="Link to event"
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Deadline (Optional)</span>
-                <input
-                  name="deadline"
-                  type="date"
-                  value={form.deadline}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={() => navigate('/manage-tasks')}
-                  className="rounded-full h-10 px-6 bg-gray-300 text-[#111418] text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold"
-                >
-                  Create Task
-                </button>
-              </div>
-            </form>
-          </div>
-        </main>
+    <div className="flex min-h-screen">
+      <AdminSidebar isOpen={true} />
+      <div className="flex-1">
+        <Navbar />
+        <div className="p-6 max-w-3xl mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Create Task</h2>
+          {error && <div className="text-red-600 mb-4">{error}</div>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Task name"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="w-full border px-3 py-2 rounded"
+              required
+            />
+
+            <textarea
+              placeholder="Description"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              className="w-full border px-3 py-2 rounded"
+            />
+
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="w-full border px-3 py-2 rounded"
+              required
+            >
+              <option value="PENDING">Pending</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+
+            <input
+              type="date"
+              value={form.deadline}
+              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+              className="w-full border px-3 py-2 rounded"
+            />
+
+            <AsyncSelect
+              cacheOptions
+              defaultOptions
+              loadOptions={loadUserOptions}
+              value={form.assignedTo}
+              onChange={(selected) => setForm({ ...form, assignedTo: selected })}
+              placeholder="Assign to user..."
+            />
+
+            <select
+              value={form.eventId}
+              onChange={(e) => setForm({ ...form, eventId: e.target.value })}
+              className="w-full border px-3 py-2 rounded"
+            >
+              <option value="">No event</option>
+              {eventOptions.map(event => (
+                <option key={event.value} value={event.value}>{event.label}</option>
+              ))}
+            </select>
+            <div className="flex justify-between pt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/tasks')}
+                className="rounded-full h-10 px-6 bg-gray-300 text-[#111418] text-sm font-medium"
+              >
+                Back
+              </button>
+
+              <button type="submit" className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold">
+                Create Task
+              </button>
+            </div>
+          </form>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </>
+    </div>
   );
-}
+};
+
+export default CreateTask;

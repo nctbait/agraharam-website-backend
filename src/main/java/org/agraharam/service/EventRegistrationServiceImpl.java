@@ -140,7 +140,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
         payment.setPaymentType("event_registration");
         payment.setStatus("pending");
         payment.setPaymentDate(LocalDateTime.now());
-        payment.setTaxDeductible(true);
+        payment.setTaxDeductible(false);
         payment.setUser(user); // if you're tracking who submitted
         payment.setDescription(user.getEmail() + " event registration for event id" + dto.eventId() +"- via " + "zelle");
         payment.setReferenceId(reg.getId());//event registration id

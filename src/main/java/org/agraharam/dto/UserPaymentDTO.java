@@ -2,6 +2,7 @@ package org.agraharam.dto;
 
 import java.time.LocalDateTime;
 
+import org.agraharam.model.Donation;
 import org.agraharam.model.Payment;
 
 public record UserPaymentDTO(LocalDateTime date, Double amount, String description, String status) {
@@ -13,6 +14,15 @@ public record UserPaymentDTO(LocalDateTime date, Double amount, String descripti
                 p.getStatus()
         );
     }
+    public static UserPaymentDTO from(Donation d) {
+        return new UserPaymentDTO(
+            d.getSubmittedAt(), 
+            d.getAmount(), 
+            d.getReason(), 
+            d.getStatus())
+        ;
+    }
+
 }
 
 

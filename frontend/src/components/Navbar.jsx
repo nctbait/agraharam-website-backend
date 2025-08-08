@@ -6,7 +6,7 @@ import api from '../api/authAxios';
 import { BellIcon } from '@heroicons/react/24/outline';
 
 export default function Navbar() {
-  const { userRole, logout } = useContext(AuthContext);
+  const { userRole } = useContext(AuthContext);
   const [hasNotifications, setHasNotifications] = useState(false);
   const isLoggedIn = userRole !== 'guest';
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function Navbar() {
     };
 
     checkNotifications();
-    const interval = setInterval(checkNotifications, 300000); // poll every 30s
+    const interval = setInterval(checkNotifications, 3000000); // poll every 30s
     return () => clearInterval(interval);
   }, []);
 

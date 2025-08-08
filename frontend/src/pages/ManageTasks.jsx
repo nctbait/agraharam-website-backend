@@ -1,94 +1,166 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
+import AdminSidebar from '../components/AdminSidebar';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import AdminSidebar from '../components/AdminSidebar';
-import { useNavigate } from 'react-router-dom';
 
-export default function ManageTasks() {
+const ManageTasks = () => {
   const [tasks, setTasks] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // Replace with API fetch
-    const mockTasks = [
-      {
-        id: 'task1',
-        name: 'Organize community meetup',
-        assignedTo: 'Ethan Carter',
-        status: 'In Progress',
-        deadline: '2024-08-15',
-        subtasks: 2,
-        event: 'Ugadi 2024'
-      },
-      {
-        id: 'task2',
-        name: 'Plan tech conference',
-        assignedTo: 'Olivia Bennett',
-        status: 'Completed',
-        deadline: '2024-07-20',
-        subtasks: 0,
-        event: ''
-      }
-    ];
-    setTasks(mockTasks);
-  }, []);
+  const fetchTasks = () => {
+    const params = new URLSearchParams({
+      page,
+      size: 10,
+      ...(statusFilter && { status: statusFilter }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate })
+    });
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    }
+    api.get(`/api/tasks/page?${params.toString()}`)
+      .then(res => {
+        setTasks(res.content);
+        setTotalPages(res.totalPages);
+      });
   };
 
+  const deleteTask = async (taskId) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return;
+    await api.delete(`/api/tasks/${taskId}`);
+    fetchTasks();
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [page, statusFilter, startDate, endDate]);
+
   return (
-    <>
-      <Navbar />
-      <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 px-4 lg:px-20 py-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Manage Tasks</h1>
+    <div className="flex min-h-screen">
+      <AdminSidebar isOpen={true} />
+      <div className="flex-1">
+        <Navbar />
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Manage Tasks</h2>
             <button
-              onClick={() => navigate('/create-task')}
               className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold"
+              onClick={() => navigate('/create-task')}
             >
-              + New Task
+              Create New Task
             </button>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-[#dde0e3] bg-white">
-            <table className="min-w-[600px] w-full">
-              <thead>
-                <tr className="bg-white">
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Task</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Assigned To</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Deadline</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Event</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-[#121416]">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tasks.map((task) => (
-                  <tr key={task.id} className="border-t border-[#dde0e3]">
-                    <td className="px-4 py-2 text-sm text-[#121416]">{task.name}</td>
-                    <td className="px-4 py-2 text-sm text-[#6a7581]">{task.assignedTo || '-'}</td>
-                    <td className="px-4 py-2 text-sm">
-                      <span className="rounded-full px-3 py-1 bg-[#f1f2f4] text-sm font-medium">{task.status}</span>
-                    </td>
-                    <td className="px-4 py-2 text-sm text-[#6a7581]">{task.deadline || '-'}</td>
-                    <td className="px-4 py-2 text-sm text-[#6a7581]">{task.event || '—'}</td>
-                    <td className="px-4 py-2 text-sm font-medium text-[#0c77f2] space-x-2">
-                      <button onClick={() => navigate(`/edit-task/${task.id}`)}>Edit</button>
-                      <button onClick={() => navigate(`/manage-subtasks/${task.id}`)}>Subtasks</button>
-                      <button onClick={() => handleDelete(task.id)} className="text-red-600">Delete</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+
+          <div className="flex gap-4 mb-4">
+            <select
+              className="border px-2 py-1 rounded"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+
+            <input
+              type="date"
+              className="border px-2 py-1 rounded"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="Start date"
+            />
+
+            <input
+              type="date"
+              className="border px-2 py-1 rounded"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="End date"
+            />
           </div>
-        </main>
+
+          <table className="w-full table-auto border">
+            <thead>
+              <tr className="bg-gray-100 text-left">
+                <th className="border px-2 py-1">Name</th>
+                <th className="border px-2 py-1">Status</th>
+                <th className="border px-2 py-1">Assignee</th>
+                <th className="border px-2 py-1">Deadline</th>
+                <th className="border px-2 py-1">Event</th>
+                <th className="border px-2 py-1">Created At</th>
+                <th className="border px-2 py-1">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tasks.map(task => (
+                <tr key={task.id}>
+                  <td className="border px-2 py-1">{task.name}</td>
+                  <td className="border px-2 py-1">{task.status}</td>
+                  <td className="border px-2 py-1">{task.assignedToName}</td>
+                  <td className="border px-2 py-1">{task.deadline}</td>
+                  <td className="border px-2 py-1">{task.eventTitle || '—'}</td>
+                  <td className="border px-2 py-1">{task.createDateTime?.split('T')[0]}</td>
+                  <td className="border px-2 py-1 space-x-2">
+                    <button
+                      onClick={() => navigate(`/edit-task/${task.id}`)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="text-red-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => navigate(`/create-subtask/${task.id}`)}
+                      className="text-green-700 hover:underline"
+                      title="Create subtask"
+                    >
+                      + Subtask
+                    </button>
+                    <button
+                      onClick={() => navigate(`/manage-subtasks/${task.id}`)}
+                      className="text-indigo-700 hover:underline"
+                      title="Manage subtasks"
+                    >
+                      Manage Subtasks
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="flex justify-between items-center mt-4">
+            <button
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+            >
+              Previous
+            </button>
+            <span>Page {page + 1} of {totalPages}</span>
+            <button
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page + 1 >= totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </>
+    </div>
   );
-}
+};
+
+export default ManageTasks;

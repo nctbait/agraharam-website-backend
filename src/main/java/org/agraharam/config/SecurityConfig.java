@@ -24,7 +24,8 @@ public class SecurityConfig {
         return http.cors(Customizer.withDefaults()) 
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/login", "/api/register","/api/matrimony/register","/api/matrimony/upload-image", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/login", "/api/donations", "/api/register","/api/matrimony/register","/api/matrimony/upload-image", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/admin/**").hasAnyAuthority("admin", "superAdmin")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)

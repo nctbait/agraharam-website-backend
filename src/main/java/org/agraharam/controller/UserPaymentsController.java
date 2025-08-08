@@ -5,8 +5,10 @@ import java.util.List;
 
 import org.agraharam.dto.UserBillDTO;
 import org.agraharam.dto.UserPaymentDTO;
+import org.agraharam.model.Donation;
 import org.agraharam.model.User;
 import org.agraharam.repository.BillRepository;
+import org.agraharam.repository.DonationRepository;
 import org.agraharam.repository.PaymentRepository;
 import org.agraharam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +30,15 @@ public class UserPaymentsController {
     @Autowired
     UserRepository userRepo;
 
+    @Autowired
+    DonationRepository donationRepo;
+
     @GetMapping("/payments")
     public List<UserPaymentDTO> getFamilyPayments(@RequestParam Long userId) {
         User primary = userRepo.findById(userId).orElse(null);
         User spouse = null;
         List<Long> userIds = new ArrayList<>();
 
-        
         if (primary != null) {
             userIds.add(primary.getId());
             spouse = primary.getFamily().getUsers().stream()
@@ -45,9 +49,17 @@ public class UserPaymentsController {
                 userIds.add(spouse.getId());
             }
         }
-        return paymentRepo.findByUserIdIn(userIds).stream()
+        List<UserPaymentDTO> result = new ArrayList<>();
+        
+        result.addAll(donationRepo.findByUserIdIn(userIds).stream()
+        .map(UserPaymentDTO::from)
+        .toList());
+
+        result.addAll(paymentRepo.findByUserIdIn(userIds).stream()
                 .map(UserPaymentDTO::from)
-                .toList();
+                .toList());
+
+        return result;
     }
 
     @GetMapping("/bills")

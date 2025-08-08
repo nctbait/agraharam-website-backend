@@ -1,138 +1,176 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import AsyncSelect from 'react-select/async';
+import api from '../api/authAxios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 
-export default function EditTask() {
+const EditTask = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState(null);
+
+  const [task, setTask] = useState(null);
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState('');
+  const [deadline, setDeadline] = useState('');
+  const [assignedTo, setAssignedTo] = useState(null);
+  const [eventId, setEventId] = useState('');
+  const [events, setEvents] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Simulate fetching task by ID
-    const mockTask = {
-      id,
-      name: 'Plan tech conference',
-      description: 'Coordinate vendors, speakers, and volunteers',
-      assignedTo: 'admin1',
-      status: 'inprogress',
-      event: 'Tech Fest 2025',
-      deadline: '2025-01-15'
-    };
+    api.get(`/api/tasks/task/${id}`)
+      .then(res => {
+        const t = res;
+        setTask(t);
+        setName(t.name);
+        setDescription(t.description);
+        setStatus(t.status);
+        setDeadline(t.deadline);
+        setEventId(t.eventId || '');
+        setAssignedTo({ label: t.assignedToName, value: t.assignedToId });
+      });
 
-    // Replace this with actual fetch logic
-    setForm(mockTask);
+    api.get('/api/events/upcoming')
+      .then(res => setEvents(res));
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const loadUserOptions = (inputValue, callback) => {
+    const query = inputValue.trim() || 'a'; // use a default fallback
+    api.get(`/api/family/user-search?query=${query}`)
+      .then(res => {
+        const options = res.map(u => ({
+          label: `${u.firstName} ${u.lastName}`,
+          value: u.id
+        }));
+        callback(options);
+      })
+      .catch(err => {
+        console.error('Failed to load user options:', err);
+        callback([]);
+      });
   };
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Updated task:', form);
-    // TODO: Update task in backend
-    navigate('/manage-tasks');
+    setError('');
+
+    try {
+      await api.put(`/api/tasks/${id}`, {
+        name,
+        description,
+        status,
+        deadline,
+        assignedToId: assignedTo?.value,
+        eventId: eventId || null
+      });
+      navigate('/admin/tasks');
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update task.');
+    }
   };
 
-  if (!form) return <div className="text-center py-20">Loading task...</div>;
+  if (!task) return <div>Loading...</div>;
 
   return (
-    <>
-      <Navbar />
-      <div className="flex">
-        <AdminSidebar isOpen={true} />
-        <main className="flex-1 flex flex-col items-center px-4 lg:px-20 py-6">
-          <div className="w-full max-w-xl bg-white rounded-xl shadow p-4">
-            <h1 className="text-2xl font-bold mb-6">Edit Task</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <label>
-                <span className="text-base font-medium">Task Name</span>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Description</span>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 min-h-24"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Assigned User</span>
-                <select
-                  name="assignedTo"
-                  value={form.assignedTo}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                >
-                  <option value="">Select user</option>
-                  <option value="volunteer1">Volunteer 1</option>
-                  <option value="admin1">Admin 1</option>
-                  <option value="superadmin1">Super Admin 1</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Status</span>
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                >
-                  <option value="">Select status</option>
-                  <option value="todo">To Do</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Event (Optional)</span>
-                <input
-                  name="event"
-                  value={form.event}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Deadline (Optional)</span>
-                <input
-                  name="deadline"
-                  type="date"
-                  value={form.deadline}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dbe0e6] px-4 h-12"
-                />
-              </label>
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={() => navigate('/manage-tasks')}
-                  className="rounded-full h-10 px-6 bg-gray-300 text-[#111418] text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </main>
+    <div className="flex min-h-screen">
+      <AdminSidebar isOpen={true} />
+      <div className="flex-1">
+        <Navbar />
+        <div className="max-w-3xl mx-auto p-6">
+          <h2 className="text-2xl font-semibold mb-4">Edit Task</h2>
+          {error && <div className="text-red-600 mb-2">{error}</div>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium">Task Name</label>
+              <input
+                className="border p-2 w-full rounded"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Description</label>
+              <textarea
+                className="border p-2 w-full rounded"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Status</label>
+              <select
+                className="border p-2 w-full rounded"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
+                <option value="TODO">Pending</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Deadline</label>
+              <input
+                type="date"
+                className="border p-2 w-full rounded"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Assignee</label>
+              <AsyncSelect
+                cacheOptions
+                defaultOptions // important
+                loadOptions={loadUserOptions}
+                value={assignedTo}
+                onChange={setAssignedTo}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Related Event (optional)</label>
+              <select
+                className="border p-2 w-full rounded"
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+              >
+                <option value="">None</option>
+                {events.map(e => (
+                  <option key={e.id} value={e.id}>{e.title}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <button
+                type="button"
+                onClick={() => navigate('/admin/tasks')}
+                className="rounded-full h-10 px-6 bg-gray-300 text-[#111418] text-sm font-medium"
+              >
+                Back
+              </button>
+              <button type="submit" className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </>
+    </div>
   );
-}
+};
+
+export default EditTask;

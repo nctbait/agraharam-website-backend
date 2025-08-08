@@ -111,7 +111,7 @@ public class FamilyMemberController {
     public SpouseDTO getSpouse(Principal principal) {
         User primary = userRepo.findByEmail(principal.getName()).orElseThrow();
         User spouse = primary.getFamily().getUsers().stream()
-                .filter(u -> !u.getEmail().equals(primary.getEmail()))
+                .filter(u -> u.getRole().name().equals("spouse"))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Spouse not found"));
 

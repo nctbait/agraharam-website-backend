@@ -1,151 +1,112 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import AsyncSelect from 'react-select/async';
+import api from '../api/authAxios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 
 export default function EditSubtask() {
-  const { id } = useParams();
+  const { taskId, id } = useParams(); // id = subtaskId
   const navigate = useNavigate();
-
-  const [subtask, setSubtask] = useState(null);
-  const [parentTasks, setParentTasks] = useState([]);
+  const [form, setForm] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Simulate fetch for subtask data by ID
-    const mockSubtask = {
-      id,
-      name: 'Book venue',
-      description: 'Find and confirm tech hall',
-      assignedTo: 'volunteer1',
-      status: 'todo',
-      deadline: '2025-01-05',
-      parentTaskId: 'task2'
+    const load = async () => {
+      const s = await api.get(`/api/subtasks/${id}`); // SubtaskDTO
+      const st = s;
+      setForm({
+        name: st.name,
+        description: st.description || '',
+        status: st.status,
+        deadline: st.deadline || '',
+        assignedTo: st.assignedToId ? { value: st.assignedToId, label: st.assignedToName } : null
+      });
     };
-
-    // Simulate fetch for parent task list
-    const mockParentTasks = [
-      { id: 'task1', name: 'Organize Community Meetup' },
-      { id: 'task2', name: 'Plan Tech Conference' }
-    ];
-
-    setSubtask(mockSubtask);
-    setParentTasks(mockParentTasks);
+    load();
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setSubtask((prev) => ({ ...prev, [name]: value }));
+  const loadUserOptions = (inputValue, callback) => {
+    const q = (inputValue || '').trim() || 'a';
+    api.get(`/api/family/user-search?query=${q}`).then(res => {
+      const opts = (res || []).map(u => ({ value: u.id, label: `${u.firstName} ${u.lastName} (${u.email})` }));
+      callback(opts);
+    }).catch(() => callback([]));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Updated Subtask:', subtask);
-    // TODO: Update via backend
-    navigate(`/manage-subtasks/${subtask.parentTaskId}`);
+    setError('');
+    try {
+      await api.put(`/api/subtasks/${id}`, {
+        name: form.name,
+        description: form.description,
+        status: form.status,
+        deadline: form.deadline || null,
+        assignedToId: form.assignedTo?.value || null
+      });
+      navigate(`/manage-subtasks/${taskId}`);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to update subtask.');
+    }
   };
 
-  if (!subtask) return <div className="text-center py-20">Loading subtask...</div>;
+  if (!form) return <div className="p-6">Loading...</div>;
 
   return (
     <>
       <Navbar />
       <div className="flex">
         <AdminSidebar isOpen={true} />
-        <main className="flex-1 flex flex-col items-center px-4 lg:px-20 py-6">
-          <div className="w-full max-w-xl bg-white rounded-xl shadow p-4">
-            <div className="mb-4 text-sm text-[#6a7581]">Edit Subtask</div>
-            <h1 className="text-2xl font-bold mb-6">{subtask.name}</h1>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-              <label>
-                <span className="text-base font-medium">Parent Task</span>
-                <select
-                  name="parentTaskId"
-                  value={subtask.parentTaskId}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] h-12 px-4"
-                  disabled // Lock parent selection during edit
-                >
-                  {parentTasks.map((task) => (
-                    <option key={task.id} value={task.id}>
-                      {task.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Subtask Name</span>
-                <input
-                  name="name"
-                  value={subtask.name}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] h-12 px-4"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Description</span>
-                <textarea
-                  name="description"
-                  value={subtask.description}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] min-h-24 px-4"
-                />
-              </label>
-              <label>
-                <span className="text-base font-medium">Assigned User</span>
-                <select
-                  name="assignedTo"
-                  value={subtask.assignedTo}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] h-12 px-4"
-                >
-                  <option value="">Select user</option>
-                  <option value="volunteer1">Volunteer 1</option>
-                  <option value="admin1">Admin 1</option>
-                  <option value="superadmin1">Super Admin 1</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Status</span>
-                <select
-                  name="status"
-                  value={subtask.status}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] h-12 px-4"
-                >
-                  <option value="">Select status</option>
-                  <option value="todo">To Do</option>
-                  <option value="inprogress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
-              </label>
-              <label>
-                <span className="text-base font-medium">Deadline</span>
-                <input
-                  name="deadline"
-                  type="date"
-                  value={subtask.deadline}
-                  onChange={handleChange}
-                  className="form-input mt-2 w-full rounded-lg border border-[#dde0e3] h-12 px-4"
-                />
-              </label>
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/manage-subtasks/${subtask.parentTaskId}`)}
-                  className="rounded-full h-10 px-6 bg-gray-300 text-[#121416] text-sm font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-full h-10 px-6 bg-[#0c77f2] text-white text-sm font-bold"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
+        <main className="flex-1 max-w-2xl mx-auto p-6">
+          <h2 className="text-2xl font-bold mb-4">Edit Subtask</h2>
+          {error && <div className="text-red-600 mb-2">{error}</div>}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              className="w-full border rounded px-3 py-2"
+              value={form.name}
+              onChange={e => setForm({ ...form, name: e.target.value })}
+              required
+            />
+            <textarea
+              className="w-full border rounded px-3 py-2"
+              value={form.description}
+              onChange={e => setForm({ ...form, description: e.target.value })}
+            />
+            <select
+              className="w-full border rounded px-3 py-2"
+              value={form.status}
+              onChange={e => setForm({ ...form, status: e.target.value })}
+            >
+              <option value="PENDING">Pending</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+            <input
+              type="date"
+              className="w-full border rounded px-3 py-2"
+              value={form.deadline}
+              onChange={e => setForm({ ...form, deadline: e.target.value })}
+            />
+            <AsyncSelect
+              cacheOptions
+              defaultOptions
+              loadOptions={loadUserOptions}
+              value={form.assignedTo}
+              onChange={(v) => setForm({ ...form, assignedTo: v })}
+              placeholder="Assign to user (optional)"
+            />
+            <div className="flex gap-3">
+              <button type="button" onClick={() => navigate(`/manage-subtasks/${taskId}`)} className="px-4 py-2 rounded bg-gray-300">
+                Back
+              </button>
+              <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white">
+                Save
+              </button>
+            </div>
+          </form>
         </main>
       </div>
       <Footer />

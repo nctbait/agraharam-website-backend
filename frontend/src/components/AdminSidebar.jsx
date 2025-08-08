@@ -23,7 +23,7 @@ export default function AdminSidebar() {
     { to: '/admin/approvals', label: 'Registration Approvals', icon: ClipboardDocumentListIcon },
     { to: '/admin/audit-logs', label: 'Audit Logs', icon: DocumentTextIcon },
     { to: '/admin/notification-management', label: 'Notification Templates', icon: BellIcon },
-    { to: '/admin/settings', label: 'Website Settings', icon: Cog6ToothIcon },
+   // { to: '/admin/settings', label: 'Website Settings', icon: Cog6ToothIcon },
    
   ];
 
@@ -31,6 +31,7 @@ export default function AdminSidebar() {
     { to: '/admin/dashboard', label: 'Dashboard', icon: WrenchIcon },
     { to: '/membership-upgrade-approval' , label: 'Membership Upgrade Approval', icon: UsersIcon},
     { to: '/event-payment-pending', label: 'Event Registration Payments', icon: CurrencyDollarIcon },
+    { to: '/admin/donation-approval', label: 'Donation Approval', icon: CurrencyDollarIcon },
     { to: '/admin/billapproval', label: 'Bill Approval', icon: CurrencyDollarIcon },
     { to: '/admin/create-event', label: 'Create Event', icon: CalendarIcon },
     { to: '/admin/manage-events', label: 'Manage Events', icon: CalendarIcon },
@@ -38,7 +39,7 @@ export default function AdminSidebar() {
     { to: '/admin/volunteer-hour-approval', label: 'Volunteer Hours Approval', icon: ClockIcon },
     { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
     { to: '/volunteer-search', label: 'Volunteer Search', icon: UsersIcon },
-    { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
+   // { to: '/admin/registrations', label: 'Event Registrations', icon: UsersIcon },
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
   ];
 

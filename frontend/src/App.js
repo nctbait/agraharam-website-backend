@@ -59,6 +59,7 @@ import AdminVolunteerHourApprovals from './pages/AdminVolunteerHourApproval';
 import MatrimonyApprovalDetails from './pages/MatrimonyApprovalDetails';
 import AdminVolunteerSearch from './pages/AdminVolunteerSearch';
 import AdminAuditLogs from './pages/AdminAuditLogs';
+import AdminDonationApprovals from './pages/AdminDonationApprovals';
 
 function App() {
   //useAutoLogout();
@@ -85,6 +86,14 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
             <AdminAuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/donation-approval"
+        element={
+          <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
+            <AdminDonationApprovals />
           </ProtectedRoute>
         }
       />
@@ -223,7 +232,7 @@ function App() {
       />
 
       <Route
-        path="/create-subtask"
+        path="/create-subtask/:taskId"
         element={
           <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <CreateSubtask />
@@ -277,7 +286,7 @@ function App() {
         }
       />
 
-      <Route path="/edit-subtask/:id" element={
+      <Route path="/task/:taskId/edit-subtask/:id" element={
         <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
           <EditSubtask />
         </ProtectedRoute>
