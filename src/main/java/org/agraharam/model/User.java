@@ -1,6 +1,7 @@
 package org.agraharam.model;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class User {
     private boolean totpEnabled;
     private String totpSecret;
 
-    private Timestamp createdAt;
+    private Timestamp createdAt = Timestamp.from(Instant.now());
 
     @Enumerated(EnumType.STRING)
     @Column(name = "access_role")

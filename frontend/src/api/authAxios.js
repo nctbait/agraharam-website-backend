@@ -37,13 +37,27 @@ const uploadFile = (url, file) => {
 
 
 const api = {
-  get: (url) => authAxios.get(url).then(res => res.data),
-  post: (url, data) => authAxios.post(url, data).then(res => res.data),
-  put: (url, data) => authAxios.put(url, data).then(res => res.data),
-  delete: (url) => authAxios.delete(url).then(res => res.data),
+  // ✅ now accepts an optional config (params, responseType, headers, etc.)
+  // ✅ returns FULL response when responseType === 'blob' (for CSV/filename headers)
+  // ✅ returns data for all other cases (backward compatible)
+  get: (url, config = {}) =>
+    authAxios.get(url, config).then(res => {
+      return config && config.responseType === 'blob' ? res : res.data;
+    }),
+
+  post: (url, data, config = {}) =>
+    authAxios.post(url, data, config).then(res => res.data),
+
+  put: (url, data, config = {}) =>
+    authAxios.put(url, data, config).then(res => res.data),
+
+  delete: (url, config = {}) =>
+    authAxios.delete(url, config).then(res => res.data),
+
   uploadFile,
   instance: authAxios
 };
+
 
 export default api;
 

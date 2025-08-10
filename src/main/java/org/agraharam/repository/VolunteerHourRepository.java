@@ -78,4 +78,6 @@ public interface VolunteerHourRepository extends JpaRepository<VolunteerHour, Lo
       """)
   List<VolunteerHourYearlyDTO> findYearlySummaryByFamilyId(@Param("familyId") Long familyId);
 
+  long countByStatusIgnoreCase(String string);
+
 }

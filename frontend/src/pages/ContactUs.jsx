@@ -13,7 +13,7 @@ export default function ContactUs() {
           <p className="mb-4">
             North Carolina Telugu Brahmin Association (NCTBA) is a registered 501(c)(3) non-profit organization. Our communication address is:
           </p>
-          <p className="mb-6 font-semibold">1234 Brahmin Lane, Cary, NC 27511</p>
+          <p className="mb-6 font-semibold">NCTBA, 2121 CRIGAN BLUFF DR, CARY NC 27513</p>
 
           <h2 className="text-2xl font-semibold mb-3">Email Contacts</h2>
           <ul className="mb-4 space-y-2">

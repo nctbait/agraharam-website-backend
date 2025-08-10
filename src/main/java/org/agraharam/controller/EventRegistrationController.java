@@ -36,7 +36,7 @@ public class EventRegistrationController {
     @PostMapping
     public ResponseEntity<?> register(@RequestBody EventRegistrationDTO dto, Principal principal) {
         registrationService.register(dto, principal.getName());
-        auditLogService.log("REGISTER_EVENT", principal.getName(), "Event", dto.eventId().toString(),
+        auditLogService.log("REGISTER_EVENT", principal.getName(), "EventRegistration", dto.eventId().toString(),
                 "User registered for event");
         return ResponseEntity.ok("Registered");
     }

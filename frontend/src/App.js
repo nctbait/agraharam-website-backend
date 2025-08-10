@@ -60,6 +60,13 @@ import MatrimonyApprovalDetails from './pages/MatrimonyApprovalDetails';
 import AdminVolunteerSearch from './pages/AdminVolunteerSearch';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminDonationApprovals from './pages/AdminDonationApprovals';
+import VendorCreate from './pages/VendorCreate';
+import VendorList from './pages/VendorList';
+import VendorEdit from './pages/VendorEdit';
+import VendorPaymentCreate from './pages/VendorPaymentCreate';
+import VendorPaymentList from './pages/VendorPaymentList';
+import RefundCreate from './pages/RefundCreate';
+import RefundList from './pages/RefundList';
 
 function App() {
   //useAutoLogout();
@@ -82,9 +89,66 @@ function App() {
       <Route path="/terms" element={<TermsAndConditions />} />
 
       <Route
+        path="/admin/refunds"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <RefundList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/refunds/new"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <RefundCreate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor-payment-create"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <VendorPaymentCreate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor-payment-list"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <VendorPaymentList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor-create"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <VendorCreate />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor-list"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <VendorList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendor-edit/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <VendorEdit />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/audit-logs"
         element={
-          <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <AdminAuditLogs />
           </ProtectedRoute>
         }
@@ -92,13 +156,13 @@ function App() {
       <Route
         path="/admin/donation-approval"
         element={
-          <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <AdminDonationApprovals />
           </ProtectedRoute>
         }
       />
 
-<Route
+      <Route
         path="/volunteer-interest"
         element={
           <ProtectedRoute allowedRoles={['user', 'admin', 'superAdmin']}>

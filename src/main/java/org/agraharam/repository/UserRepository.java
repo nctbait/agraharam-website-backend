@@ -1,5 +1,6 @@
 package org.agraharam.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,4 +33,21 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> searchByNameOrEmail(@Param("query") String query);
 
     Optional<User> findByFamilyIdAndRole(Long familyId, Role role);
+    long countByApprovedFalseAndHasLoginTrue();
+    long countByRoleAndApprovedTrue(Role primary);
+
+    @Query("""
+        select u from User u
+        where lower(u.role) = 'primary'
+          and u.approved = true
+    """)
+    List<User> findActiveMembers();
+
+    @Query("""
+        select u from User u
+        where u.createdAt between :start and :end
+          and lower(u.role) = 'primary'
+    """)
+    List<User> findNewMembersBetween(@Param("start") LocalDateTime start,
+                                     @Param("end") LocalDateTime end);
 }

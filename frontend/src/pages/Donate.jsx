@@ -84,7 +84,7 @@ export default function Donate() {
       amount: parseFloat(form.amount),
       paymentMethod: form.paymentMethod,
       confirmationCode: form.confirmationCode,
-      captchaToken:form.captchaToken
+      captchaToken: form.captchaToken
     };
 
     try {
@@ -114,7 +114,10 @@ export default function Donate() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-4">Support NCTBA</h1>
           <p className="text-base text-gray-700 mb-4">
             Your generous contributions help us sustain and expand our community initiatives.
-            Donations are tax-deductible under our 501(c)(3) status. Our ID is 123-4567890.
+            Donations are tax-deductible under our NCTBA 501c3 ID # 88-2262971.
+            <br />
+            Zelle or PayPal to NCTBA.Agraharam@Gmail.com OR by a check payable to “NCTBA” and either mail /bill-pay to the following address:
+            NCTBA, 2121 CRIGAN BLUFF DR, CARY NC 27513
           </p>
 
           {isLoggedIn && (

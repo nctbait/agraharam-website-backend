@@ -1,10 +1,11 @@
+// AdminDashboard.jsx
 import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/authAxios';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
-
 import {
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
@@ -13,7 +14,8 @@ import {
   WrenchIcon,
   BellIcon,
   DocumentTextIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 export default function AdminDashboard() {
@@ -22,13 +24,24 @@ export default function AdminDashboard() {
   const isSuperAdmin = user?.userRole?.startsWith('superAdmin');
   const isAdmin = user?.userRole?.startsWith('admin');
 
-  const [metrics, setMetrics] = useState({
-    pendingRegistrations: 4,
-    unapprovedDonations: 2,
-    pendingEventPayments: 3,
-    upcomingEvents: 1,
-    pendingTasks: 5,
-  });
+  const [metrics, setMetrics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    api.get('/api/admin/metrics')
+      .then(res => {
+        if (!mounted) return;
+        setMetrics(res);
+      })
+      .catch(e => {
+        console.error(e);
+        setErr('Failed to load metrics.');
+      })
+      .finally(() => setLoading(false));
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <>
@@ -38,18 +51,48 @@ export default function AdminDashboard() {
         <main className="flex-1 px-4 lg:px-20 py-6">
           <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
 
-          <h2 className="text-xl font-semibold mb-4">System Overview</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
-            <MetricCard label="Pending Registrations" value={metrics.pendingRegistrations} icon={<ClipboardDocumentListIcon className="w-6 h-6" />} path="/admin/approvals" navigate={navigate} />
-            <MetricCard label="Unapproved Donations" value={metrics.unapprovedDonations} icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/admin/donation-approval" navigate={navigate} />
-            <MetricCard label="Event Payments" value={metrics.pendingEventPayments} icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/event-payment-pending" navigate={navigate} />
-            <MetricCard label="Upcoming Events" value={metrics.upcomingEvents} icon={<CalendarIcon className="w-6 h-6" />} path="/admin/manage-events" navigate={navigate} />
-            <MetricCard label="Pending Tasks" value={metrics.pendingTasks} icon={<ClipboardDocumentListIcon className="w-6 h-6" />} path="/admin/tasks" navigate={navigate} />
+          {loading && <div className="text-gray-500">Loading metrics…</div>}
+          {err && <div className="text-red-600 mb-3">{err}</div>}
 
-          </div>
+          {!loading && metrics && (
+            <>
+              <h2 className="text-xl font-semibold mb-4">System Overview</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
 
-          {/* Admin Tools */}
-          {(isAdmin || isSuperAdmin) && (
+                <MetricCard label="Pending Registrations" value={metrics.pendingRegistrations}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />} path="/admin/approvals" navigate={navigate} />
+
+                <MetricCard label="Unapproved Donations" value={metrics.unapprovedDonations}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/admin/donation-approval" navigate={navigate} />
+
+                <MetricCard label="Event Payments (Pending)" value={metrics.pendingEventPayments}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/event-payment-pending" navigate={navigate} />
+
+                <MetricCard label="Upcoming Events" value={metrics.upcomingEvents}
+                  icon={<CalendarIcon className="w-6 h-6" />} path="/admin/manage-events" navigate={navigate} />
+
+                <MetricCard label="Open Tasks" value={metrics.openTasks}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />} path="/admin/tasks" navigate={navigate} />
+
+                <MetricCard label="Overdue Tasks" value={metrics.overdueTasks}
+                  icon={<ExclamationTriangleIcon className="w-6 h-6" />} path="/admin/tasks" navigate={navigate} />
+
+                <MetricCard label="Pending Bills" value={metrics.pendingBills}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/admin/billapproval" navigate={navigate} />
+
+                <MetricCard label="Volunteer Hours Pending" value={metrics.pendingVolunteerHours}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />} path="/admin/volunteer-hour-approval" navigate={navigate} />
+
+                <MetricCard label="Active Members" value={metrics.activeMembers}
+                  icon={<UsersIcon className="w-6 h-6" />} path="/admin/reports" navigate={navigate} />
+
+                <MetricCard label="Donations (YTD)" value={`$${metrics.donationsYTD.toFixed(2)}`}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />} path="/admin/reports" navigate={navigate} />
+              </div>
+            </>
+          )}
+
+          {/*(isAdmin || isSuperAdmin) && (
             <>
               <h2 className="text-xl font-semibold mb-4">Admin Tools</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -63,13 +106,11 @@ export default function AdminDashboard() {
                 <AdminCard title="Membership Upgrade Approval" path="/membership-upgrade-approval" navigate={navigate} />
                 <AdminCard title="Matrimony Approval" path="/matrimony-approval" navigate={navigate} />
                 <AdminCard title="Volunteer Search" path="/volunteer-search" navigate={navigate} />
-             {/*   <AdminCard title="Event Registrations" path="/admin/registrations" navigate={navigate} />*/}
                 <AdminCard title="Reports" path="/admin/reports" navigate={navigate} />
               </div>
             </>
           )}
 
-          {/* Super Admin Tools */}
           {isSuperAdmin && (
             <>
               <h2 className="text-xl font-semibold mt-10 mb-4">Super Admin Controls</h2>
@@ -80,7 +121,7 @@ export default function AdminDashboard() {
                 <AdminCard title="Notification Templates" path="/admin/notification-management" navigate={navigate} />
               </div>
             </>
-          )}
+          )*/}
         </main>
       </div>
       <Footer />
@@ -88,7 +129,6 @@ export default function AdminDashboard() {
   );
 }
 
-// 🔹 Dashboard Metric Card
 function MetricCard({ label, value, icon, path, navigate }) {
   return (
     <div
@@ -106,8 +146,6 @@ function MetricCard({ label, value, icon, path, navigate }) {
   );
 }
 
-
-// 🔸 Admin Action Card (clickable)
 function AdminCard({ title, path, navigate }) {
   return (
     <div

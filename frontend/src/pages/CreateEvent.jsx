@@ -3,8 +3,10 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateEvent() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -51,7 +53,7 @@ export default function CreateEvent() {
     })
       .then(() => {
         setSuccessMessage("Event updated successfully!");
-        setTimeout(() => setSuccessMessage(""), 3000);
+        setTimeout(() => navigate('/admin/manage-events'), 3000);
       })
       .catch(err => console.error("Failed to create event", err));
 
