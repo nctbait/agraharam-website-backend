@@ -65,7 +65,7 @@ const VolunteerHours = () => {
                     <td className="border px-4 py-2">
                       <button
                         onClick={() => navigate(`/add-volunteer-hours/${member.memberId}?relationship=${member.relationship}`)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                        className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60"
                       >
                         Add Hours
                       </button>

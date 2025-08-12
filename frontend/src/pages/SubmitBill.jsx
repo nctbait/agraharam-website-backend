@@ -214,7 +214,7 @@ export default function SubmitBill() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold"
+                  className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60"
                 >
                   Submit Bill
                 </button>

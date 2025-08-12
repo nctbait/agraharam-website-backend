@@ -6,6 +6,7 @@ import java.util.List;
 import org.agraharam.enums.EventStatus;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -49,6 +50,9 @@ public class EventRegistration {
     
     @Enumerated(EnumType.STRING)
     private EventStatus status; // e.g., CONFIRMED, CANCELLED, WAITLISTED, SUBMITTED
+
+    @Column(length = 800)
+    private String cancellationReason;
 
     // Getters and setters
 }

@@ -15,22 +15,19 @@ export default function EventRegistration() {
   const [membership, setMembership] = useState(null);
 
   const [selectedFamily, setSelectedFamily] = useState([]);
-  const [guests, setGuests] = useState([]); // editable rows
+  const [guests, setGuests] = useState([]); // [{ name, age }]
   const [offerings, setOfferings] = useState([]); // [{ id, name, price, maxQuantity, selectedQuantity }]
 
-  const [quote, setQuote] = useState(null); // server breakdown
+  const [quote, setQuote] = useState(null);
   const [zelleConfirmation, setZelleConfirmation] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [formError, setFormError] = useState('');
 
   // fetch event, membership, family
   useEffect(() => {
-    api.get(`/api/events/get/${id}`).then(data => {
-      setEvent(data);
-      setOfferings((data.offerings || []).map(o => ({
-        ...o,
-        selectedQuantity: 0
-      })));
+    api.get(`/api/events/get/${id}`).then((ev) => {
+      setEvent(ev);
+      setOfferings((ev?.offerings || []).map(o => ({ ...o, selectedQuantity: 0 })));
     });
 
     Promise.all([
@@ -39,28 +36,19 @@ export default function EventRegistration() {
       api.get('/api/family/current_members'),
       api.get('/api/memberships/current')
     ]).then(([primaryRes, spouseRes, childrenRes, membershipRes]) => {
-      const primary = primaryRes?.id ? {
-        id: primaryRes.id,
-        name: `${primaryRes.firstName} ${primaryRes.lastName}`.trim(),
-        relation: 'Primary'
-      } : null;
-      const spouse = spouseRes?.id ? {
-        id: spouseRes.id,
-        name: `${spouseRes.firstName} ${spouseRes.lastName}`.trim(),
-        relation: 'Spouse'
-      } : null;
-      const kids = (childrenRes || []).map(c => ({
-        id: c.id,
-        name: c.name,
-        relation: c.relation
-      }));
-      const combined = [primary, ...(spouse ? [spouse] : []), ...kids].filter(Boolean);
-      setFamily(combined);
+      const primary = primaryRes?.id
+        ? { id: primaryRes.id, name: `${primaryRes.firstName} ${primaryRes.lastName}`.trim(), relation: 'Primary' }
+        : null;
+      const spouse = spouseRes?.id
+        ? { id: spouseRes.id, name: `${spouseRes.firstName} ${spouseRes.lastName}`.trim(), relation: 'Spouse' }
+        : null;
+      const kids = (childrenRes || []).map(c => ({ id: c.id, name: c.name, relation: c.relation }));
+      setFamily([primary, ...(spouse ? [spouse] : []), ...kids].filter(Boolean));
       setMembership(membershipRes);
     });
   }, [id]);
 
-  // find the pricing row for this user's membership tier
+  // pricing tier row
   const tierPricing = useMemo(() => {
     if (!event || !membership) return null;
     return (event.pricing || []).find(p => p.membershipTier === membership.membershipName) || null;
@@ -72,28 +60,22 @@ export default function EventRegistration() {
     [guests]
   );
   const selectedOfferings = useMemo(
-    () => offerings.filter(o => (o.selectedQuantity || 0) > 0).map(o => ({ id: o.id, quantity: o.selectedQuantity })),
+    () =>
+      offerings
+        .filter(o => (o.selectedQuantity || 0) > 0)
+        .map(o => ({ id: o.id, quantity: o.selectedQuantity })),
     [offerings]
   );
 
-  // enforce maxGuests (tier-based)
+  // constraints
   const totalSelectedMembers = selectedFamily.length;
-  //const currentGuestCount = cleanedGuests.length;
   const includedGuests = tierPricing?.includedGuests ?? 0;
   const maxGuests = tierPricing?.maxGuests ?? Number.MAX_SAFE_INTEGER;
-
-  //const totalPeople = totalSelectedMembers + currentGuestCount;
-  //const remainingGuestSlots = Math.max(0, maxGuests - totalSelectedMembers); // how many guest rows allowed given family selected
-
   const remainingGuestSlots = Math.max(0, maxGuests - totalSelectedMembers);
   const allowedGuestAdds = Math.max(0, remainingGuestSlots - cleanedGuests.length);
   const totalPeople = totalSelectedMembers + cleanedGuests.length;
 
-  const addGuest = () => {
-    if (allowedGuestAdds > 0) {
-      setGuests(prev => [...prev, { name: '', age: '' }]);
-    }
-  };
+  const addGuest = () => { if (allowedGuestAdds > 0) setGuests(prev => [...prev, { name: '', age: '' }]); };
   const removeGuest = (i) => setGuests(guests.filter((_, idx) => idx !== i));
   const handleGuestChange = (i, field, value) => {
     const next = [...guests];
@@ -102,9 +84,7 @@ export default function EventRegistration() {
   };
 
   const handleToggleMember = (memberId) => {
-    setSelectedFamily(prev =>
-      prev.includes(memberId) ? prev.filter(id => id !== memberId) : [...prev, memberId]
-    );
+    setSelectedFamily(prev => (prev.includes(memberId) ? prev.filter(id => id !== memberId) : [...prev, memberId]));
   };
 
   const handleOfferingQty = (idx, raw) => {
@@ -117,30 +97,26 @@ export default function EventRegistration() {
     setOfferings(next);
   };
 
-  // ask backend for the authoritative quote whenever inputs change
+  // live quote for UI
   useEffect(() => {
     if (!event || !membership) return;
+    if (selectedFamily.length === 0) { setQuote(null); return; }
 
-    const controller = new AbortController();
     const payload = {
       eventId: event.id,
       membershipTier: membership.membershipName,
       familyMemberIds: selectedFamily,
-      guests: cleanedGuests, // [{ name, age }]
-      offerings: selectedOfferings // [{ id, quantity }]
+      guests: cleanedGuests,
+      offerings: selectedOfferings
     };
 
-    // only call if at least 1 family member is selected
-    if (selectedFamily.length > 0) {
-      api.post('/api/event-registrations/quote', payload)
-        .then(setQuote)
-        .catch(() => setQuote(null));
-    } else {
-      setQuote(null);
-    }
-
-    return () => controller.abort();
+    api.post('/api/event-registrations/quote', payload)
+       .then(setQuote)
+       .catch(() => setQuote(null));
   }, [event, membership, selectedFamily, cleanedGuests, selectedOfferings]);
+
+  const totalAmount = Number(quote?.total ?? 0);
+  const requiresPayment = totalAmount > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,8 +125,16 @@ export default function EventRegistration() {
       setFormError('Please select at least one family member to register.');
       return;
     }
+    if (!quote) {
+      setFormError('Please generate the quote before submitting.');
+      return;
+    }
     if (totalPeople > maxGuests) {
       setFormError(`You cannot register more than ${maxGuests} people (including family).`);
+      return;
+    }
+    if (requiresPayment && !zelleConfirmation.trim()) {
+      setFormError('Payment confirmation number is required because total > $0.');
       return;
     }
     setFormError('');
@@ -160,9 +144,14 @@ export default function EventRegistration() {
       familyMembers: family
         .filter(m => selectedFamily.includes(m.id))
         .map(m => ({ id: m.id, relation: m.relation })),
-      guests: cleanedGuests.map(g => ({ name: g.name.trim(), age: parseInt(g.age, 10), relation: 'Guest' })),
-      zelleConfirmation,
-      offerings: selectedOfferings
+      guests: cleanedGuests.map(g => ({
+        name: g.name.trim(),
+        age: parseInt(g.age, 10),
+        relation: 'Guest'
+      })),
+      offerings: selectedOfferings,
+      totalAmount: Number(totalAmount.toFixed(2)),
+      ...(requiresPayment ? { zelleConfirmation: zelleConfirmation.trim() } : {})
     };
 
     try {
@@ -215,9 +204,7 @@ export default function EventRegistration() {
             <div className="mb-6">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold">Add Guests</h2>
-                <span className="text-xs text-gray-500">
-                  Remaining guest slots: {allowedGuestAdds}
-                </span>
+                <span className="text-xs text-gray-500">Remaining guest slots: {allowedGuestAdds}</span>
               </div>
               {guests.map((g, i) => (
                 <div key={i} className="flex gap-2 items-center mb-2">
@@ -262,7 +249,7 @@ export default function EventRegistration() {
                   <div>
                     <div className="font-medium">{o.name}</div>
                     <div className="text-xs text-gray-500">
-                      ${o.price} · Max: {o.maxQuantity ?? '—'}
+                      ${Number(o.price ?? 0).toFixed(2)} · Max: {o.maxQuantity ?? '—'}
                     </div>
                   </div>
                   <input
@@ -279,14 +266,19 @@ export default function EventRegistration() {
 
             {/* Payment */}
             <div className="mb-6">
-              <label className="block font-semibold">Zelle/PayPal Confirmation #</label>
+              <label className="block font-semibold">
+                Zelle/PayPal Confirmation # {requiresPayment && <span className="text-red-600">*</span>}
+              </label>
               <input
                 type="text"
                 value={zelleConfirmation}
                 onChange={e => setZelleConfirmation(e.target.value)}
-                required
+                required={requiresPayment}
                 className="border rounded px-3 py-2 w-full"
               />
+              {!requiresPayment && (
+                <p className="text-xs text-gray-500 mt-1">No payment needed for this registration (total is $0).</p>
+              )}
             </div>
 
             {/* Quote / breakdown */}
@@ -297,12 +289,16 @@ export default function EventRegistration() {
               ) : (
                 <>
                   <ul className="text-sm text-gray-700 space-y-1">
-                    <li>Base Price: ${quote.basePrice?.toFixed(2)}</li>
-                    <li>Included Guests: {quote.includedGuests}</li>
-                    <li>Additional Guests: {quote.additionalGuestCount} × ${quote.additionalGuestPrice?.toFixed(2)} = ${quote.additionalGuestFee?.toFixed(2)}</li>
-                    <li>Offerings Total: ${quote.offeringsTotal?.toFixed(2)}</li>
+                    <li>Base Price: ${Number(quote.basePrice ?? 0).toFixed(2)}</li>
+                    <li>Included Guests: {Number(quote.includedGuests ?? 0)}</li>
+                    <li>
+                      Additional Guests: {Number(quote.additionalGuestCount ?? 0)} × $
+                      {Number(quote.additionalGuestPrice ?? 0).toFixed(2)} = $
+                      {Number(quote.additionalGuestFee ?? 0).toFixed(2)}
+                    </li>
+                    <li>Offerings Total: ${Number(quote.offeringsTotal ?? 0).toFixed(2)}</li>
                   </ul>
-                  <div className="font-bold mt-2">Total: ${quote.total?.toFixed(2)}</div>
+                  <div className="font-bold mt-2">Total: ${Number(quote.total ?? 0).toFixed(2)}</div>
                   {quote.message && <div className="text-xs text-gray-500 mt-1">{quote.message}</div>}
                 </>
               )}
@@ -313,14 +309,22 @@ export default function EventRegistration() {
                 {formError}
               </div>
             )}
-
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              Submit Registration
-            </button>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/user-events')}
+                className="h-10 px-4 rounded-lg border hover:bg-gray-50"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60"
+              >
+                Submit Registration
+              </button>
+            </div>
           </div>
         </div>
       </div>

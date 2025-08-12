@@ -4,12 +4,13 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 import api from '../api/authAxios';
+import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 export default function EditFamilyMember() {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = id === 'new';
-  
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     age: '',
@@ -52,7 +53,15 @@ export default function EditFamilyMember() {
     <>
       <Navbar />
       <div className="flex">
-        <Sidebar isOpen={true} showDashboardLink={true} />
+        <Sidebar isOpen={sidebarOpen} showDashboardLink={true} />
+        <div className="flex-1 p-6 space-y-6">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {sidebarOpen ? <ArrowLeftIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
+          </button>
         <main className="flex-1 max-w-3xl mx-auto bg-white shadow p-6 rounded-xl my-6">
           <h2 className="text-2xl font-bold mb-4">
             {isNew ? 'Add Family Member' : 'Edit Family Member'}
@@ -78,6 +87,7 @@ export default function EditFamilyMember() {
             </div>
           </form>
         </main>
+        </div>
       </div>
       <Footer />
     </>

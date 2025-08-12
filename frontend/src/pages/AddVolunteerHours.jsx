@@ -5,11 +5,13 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar';
 import api from '../api/authAxios';
+import { Bars3Icon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const AddVolunteerHours = () => {
   const { memberId } = useParams();
   const [searchParams] = useSearchParams();
   const relationship = searchParams.get('relationship');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [member, setMember] = useState(null);
   const [formData, setFormData] = useState({
@@ -82,8 +84,16 @@ const AddVolunteerHours = () => {
   return (
     <>
       <Navbar />
-      <div className="flex bg-gray-50 min-h-screen">
-        <Sidebar isOpen={true} />
+      <div className="flex min-h-screen">
+        <Sidebar isOpen={sidebarOpen} />
+        <div className="flex-1 p-6 space-y-6">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
+            className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+          >
+            {sidebarOpen ? <ArrowLeftIcon className="h-5 w-5" /> : <Bars3Icon className="h-5 w-5" />}
+          </button>
         <main className="flex-1 max-w-3xl mx-auto px-6 py-10">
           <div className="bg-white rounded-xl shadow-md p-6">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">Submit Volunteer Hours</h1>
@@ -125,7 +135,7 @@ const AddVolunteerHours = () => {
 
                 <button
                   onClick={handleSubmit}
-                  className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
+                  className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60"
                 >
                   Submit Hours
                 </button>
@@ -135,6 +145,7 @@ const AddVolunteerHours = () => {
             )}
           </div>
         </main>
+        </div>
       </div>
       <Footer />
     </>

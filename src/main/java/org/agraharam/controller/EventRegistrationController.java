@@ -3,6 +3,7 @@ package org.agraharam.controller;
 import java.security.Principal;
 import java.util.List;
 
+import org.agraharam.dto.CancelRegistrationRequest;
 import org.agraharam.dto.EventDTO;
 import org.agraharam.dto.EventRegistrationDTO;
 import org.agraharam.dto.UserEventViewDTO;
@@ -50,8 +51,8 @@ public class EventRegistrationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> cancel(@PathVariable Long id, Principal principal) {
-        registrationService.cancelRegistration(id, principal.getName());
+    public ResponseEntity<?> cancel(@PathVariable Long id,@RequestBody(required = false) CancelRegistrationRequest req, Principal principal) {
+        registrationService.cancelRegistration(id, principal.getName(),req);
         auditLogService.log("CANCEL_EVENT", principal.getName(), "EventRegistration", String.valueOf(id),
                 "User cancelled registration");
         return ResponseEntity.ok("Cancelled");

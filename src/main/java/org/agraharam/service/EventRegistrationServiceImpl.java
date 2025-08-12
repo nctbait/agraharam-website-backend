@@ -1,10 +1,13 @@
 package org.agraharam.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.agraharam.dto.CancelRegistrationRequest;
+import org.agraharam.dto.CreateRefundRequest;
 import org.agraharam.dto.EventDTO;
 import org.agraharam.dto.EventRegistrationDTO;
 import org.agraharam.dto.FamilyMemberRequest;
@@ -12,6 +15,8 @@ import org.agraharam.dto.GuestDTO;
 import org.agraharam.dto.OfferingSelectionDTO;
 import org.agraharam.dto.UserEventViewDTO;
 import org.agraharam.enums.EventStatus;
+import org.agraharam.enums.RefundReferenceType;
+import org.agraharam.enums.RefundStatus;
 import org.agraharam.model.Event;
 import org.agraharam.model.EventOffering;
 import org.agraharam.model.EventOfferingSelection;
@@ -20,6 +25,7 @@ import org.agraharam.model.Family;
 import org.agraharam.model.FamilyMember;
 import org.agraharam.model.Guest;
 import org.agraharam.model.Payment;
+import org.agraharam.model.Refund;
 import org.agraharam.model.User;
 import org.agraharam.repository.EventOfferingRepository;
 import org.agraharam.repository.EventRegistrationRepository;
@@ -51,18 +57,25 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
     @Autowired
     private EventOfferingRepository offeringRepo;
 
+    @Autowired
+    private RefundService refundService;
+
     @Override
     public List<UserEventViewDTO> getMyRegistrations(String email) {
         User user = userRepo.findByEmail(email).orElseThrow();
         Family family = user.getFamily();
-        List<EventRegistration> registrations = registrationRepo.findByUser_Family(family);
+        List<EventRegistration> registrations = registrationRepo.findByUser_FamilyAndStatus(family,
+                EventStatus.CONFIRMED);
 
         return registrations.stream().map(reg -> {
             List<String> guestNames = reg.getGuests().stream()
                     .map(Guest::getName).toList();
 
-            List<String> memberNames = reg.getFamilyMembers().stream()
-                    .map(FamilyMember::getName).toList();
+            List<String> memberNames = new ArrayList<>();
+            memberNames.addAll(reg.getUsers().stream()
+                    .map(u -> u.getFirstName() + " " + u.getLastName()).toList());
+            memberNames.addAll(reg.getFamilyMembers().stream()
+                    .map(FamilyMember::getName).toList());
 
             return new UserEventViewDTO(
                     reg.getId(),
@@ -133,20 +146,22 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
             g.setRegistration(reg);
             guestRepo.save(g);
         }
-
-        Payment payment = new Payment();
-        payment.setAmount(dto.totalAmount());
-        payment.setConfirmation(dto.zelleConfirmation());
-        payment.setPaymentType("event_registration");
-        payment.setStatus("pending");
-        payment.setPaymentDate(LocalDateTime.now());
-        payment.setTaxDeductible(false);
-        payment.setUser(user); // if you're tracking who submitted
-        payment.setDescription(user.getEmail() + " event registration for event id" + dto.eventId() +"- via " + "zelle");
-        payment.setReferenceId(reg.getId());//event registration id
-        payment.setReferenceyType("EventRegistration");
-        payment.setPaymentMethod("zelle");
-        paymentRepo.save(payment);
+        if (dto.totalAmount() != null || dto.totalAmount() > 0) {
+            Payment payment = new Payment();
+            payment.setAmount(dto.totalAmount());
+            payment.setConfirmation(dto.zelleConfirmation());
+            payment.setPaymentType("event_registration");
+            payment.setStatus("pending");
+            payment.setPaymentDate(LocalDateTime.now());
+            payment.setTaxDeductible(false);
+            payment.setUser(user); // if you're tracking who submitted
+            payment.setDescription(
+                    user.getEmail() + " event registration for event id" + dto.eventId() + "- via " + "zelle");
+            payment.setReferenceId(reg.getId());// event registration id
+            payment.setReferenceyType("EventRegistration");
+            payment.setPaymentMethod("zelle");
+            paymentRepo.save(payment);
+        }
     }
 
     @Override
@@ -204,14 +219,37 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
     }
 
     @Override
-    public void cancelRegistration(Long id, String email) {
+    public void cancelRegistration(Long id, String email, CancelRegistrationRequest request) {
+        String cancelReason = "";
+        if (request != null && request.reason() != null && !request.reason().isBlank()) {
+            cancelReason = request.reason();
+        }
         EventRegistration reg = registrationRepo.findById(id).orElseThrow();
-
         if (!reg.getUser().getEmail().equals(email)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot cancel this registration");
         }
 
+        if (reg.getStatus() == EventStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Registration already cancelled");
+        }
+
+        List<Payment> originalPayments = paymentRepo.findByReferenceyTypeAndReferenceId("EventRegistration",
+                reg.getId());
+        if (originalPayments != null) {
+            for (Payment payment : originalPayments) {
+                if (payment.getAmount() != null) {
+                    CreateRefundRequest req = new CreateRefundRequest(RefundReferenceType.EventRegistration,
+                            reg.getId(),
+                            payment.getId(), reg.getUser().getId(), BigDecimal.valueOf(payment.getAmount()),
+                            "Event registration Cancellation, " + cancelReason + " original confirmation code:"
+                                    + payment.getPaymentMethod() + " " + payment.getConfirmation() + " amount paid:"
+                                    + payment.getAmount());
+                    refundService.create(req, email);
+                }
+            }
+        }
         reg.setStatus(EventStatus.CANCELLED);
+        reg.setCancellationReason(cancelReason);
         registrationRepo.save(reg);
     }
 
@@ -222,7 +260,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
         LocalDate today = LocalDate.now();
 
         List<Event> upcomingEvents = eventRepo.findByDateAfter(today);
-        List<Long> registeredEventIds = registrationRepo.findByUser_Family(family)
+        List<Long> registeredEventIds = registrationRepo.findByUser_FamilyAndStatus(family, EventStatus.CONFIRMED)
                 .stream().map(reg -> reg.getEvent().getId()).toList();
 
         return upcomingEvents.stream()
@@ -275,9 +313,9 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
 
         // Offerings
         List<OfferingSelectionDTO> offerings = new ArrayList<>();
-         reg.getOfferings().stream()
-        .map(o -> new OfferingSelectionDTO(o.getOffering().getId(), o.getQuantity()))
-        .toList();
+        reg.getOfferings().stream()
+                .map(o -> new OfferingSelectionDTO(o.getOffering().getId(), o.getQuantity()))
+                .toList();
 
         return new EventRegistrationDTO(
                 reg.getEvent().getId(),

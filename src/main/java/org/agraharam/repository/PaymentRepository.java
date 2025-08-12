@@ -17,6 +17,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
 
     List<Payment> findByUserIdIn(List<Long> userIds);
 
+    List<Payment> findByReferenceyTypeAndReferenceId(String referenceyType, Long referenceId);
+
     @Query("SELECT YEAR(p.paymentDate), SUM(p.amount) FROM Payment p WHERE p.user.id IN :userIds AND p.paymentType = 'user_membership' AND p.status = 'approved' AND p.taxDeductible = true GROUP BY YEAR(p.paymentDate)")
     List<Object[]> getApprovedMembershipByYear(@Param("userIds") List<Long> userIds);
 
