@@ -10,6 +10,7 @@ import org.agraharam.model.User;
 import org.agraharam.repository.BillRepository;
 import org.agraharam.repository.DonationRepository;
 import org.agraharam.repository.PaymentRepository;
+import org.agraharam.repository.RefundRepository;
 import org.agraharam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +33,9 @@ public class UserPaymentsController {
 
     @Autowired
     DonationRepository donationRepo;
+    
+    @Autowired
+    RefundRepository refundRepo;
 
     @GetMapping("/payments")
     public List<UserPaymentDTO> getFamilyPayments(@RequestParam Long userId) {
@@ -56,6 +60,39 @@ public class UserPaymentsController {
         .toList());
 
         result.addAll(paymentRepo.findByUserIdIn(userIds).stream()
+                .map(UserPaymentDTO::from)
+                .toList());
+
+        return result;
+    }
+
+    @GetMapping("/paymentsAndRefunds")
+    public List<UserPaymentDTO> getFamilyPaymentsAndRefunds(@RequestParam Long userId) {
+        User primary = userRepo.findById(userId).orElse(null);
+        User spouse = null;
+        List<Long> userIds = new ArrayList<>();
+
+        if (primary != null) {
+            userIds.add(primary.getId());
+            spouse = primary.getFamily().getUsers().stream()
+                    .filter(u -> "spouse".equalsIgnoreCase(u.getRole().name()))
+                    .findFirst()
+                    .orElse(null);
+            if (spouse != null) {
+                userIds.add(spouse.getId());
+            }
+        }
+        List<UserPaymentDTO> result = new ArrayList<>();
+        
+        result.addAll(donationRepo.findByUserIdIn(userIds).stream()
+        .map(UserPaymentDTO::from)
+        .toList());
+
+        result.addAll(paymentRepo.findByUserIdIn(userIds).stream()
+                .map(UserPaymentDTO::from)
+                .toList());
+                
+        result.addAll(refundRepo.findByRequesterUserIdIn(userIds).stream()
                 .map(UserPaymentDTO::from)
                 .toList());
 

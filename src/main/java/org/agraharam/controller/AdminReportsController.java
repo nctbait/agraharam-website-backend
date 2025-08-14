@@ -1,9 +1,11 @@
 // AdminReportsController.java
 package org.agraharam.controller;
 
+import org.agraharam.dto.EventFinancialDto;
 import org.agraharam.dto.reports.*;
 import org.agraharam.model.*;
 import org.agraharam.repository.*;
+import org.agraharam.service.ReportService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,27 +25,21 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class AdminReportsController {
 
-    private final PaymentRepository paymentRepo;
-    private final DonationRepository donationRepo;
     private final EventRepository eventRepo;
     private final UserRepository userRepo;
     private final TaskRepository taskRepo;
-    private final BillRepository billRepo; // if you track expenses by event
+    private final ReportService reportService;
 
     public AdminReportsController(
-            PaymentRepository paymentRepo,
-            DonationRepository donationRepo,
             EventRepository eventRepo,
             UserRepository userRepo,
             TaskRepository taskRepo,
-            BillRepository billRepo
+            ReportService reportService
     ) {
-        this.paymentRepo = paymentRepo;
-        this.donationRepo = donationRepo;
         this.eventRepo = eventRepo;
         this.userRepo = userRepo;
         this.taskRepo = taskRepo;
-        this.billRepo = billRepo;
+        this.reportService = reportService;
     }
 
     // ---------- Helpers ----------
@@ -70,23 +66,7 @@ public class AdminReportsController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "csv") String format
     ) throws Exception {
-        Range r = toRange(startDate, endDate);
-
-        // Approved non-donation payments (could include membership/event/etc.)
-        List<Payment> payments = paymentRepo.findApprovedBetween(r.start(), r.end());
-
-        // Approved donations
-        List<Donation> donations = donationRepo.findByStatusApprovedBetween(r.start(), r.end());
-
-        // Map to DTO rows
-        List<TransactionRow> rows = new ArrayList<>();
-        for (Payment p : payments) {
-            rows.add(TransactionRow.fromPayment(p));
-        }
-        for (Donation d : donations) {
-            rows.add(TransactionRow.fromDonation(d));
-        }
-        rows.sort(Comparator.comparing(TransactionRow::date));
+        List<org.agraharam.dto.TransactionRow> rows = reportService.transactions( startDate,  endDate);
 
         if ("json".equalsIgnoreCase(format)) {
             // Let Spring serialize JSON
@@ -98,14 +78,14 @@ public class AdminReportsController {
 
         setCsvHeaders(resp, "transactions.csv");
         try (PrintWriter pw = resp.getWriter()) {
-            pw.println("type,id,date,amount,method,description,userName,userEmail,referenceType,referenceId,status");
-            for (TransactionRow r0 : rows) {
-                pw.printf("%s,%s,%s,%.2f,%s,%s,%s,%s,%s,%s,%s%n",
-                        r0.type(), nullSafe(r0.id()), nullSafe(r0.date()),
+            pw.println("type,id,date,amount,method,direction,counterparty,referenceType,referenceId,status");
+            for (org.agraharam.dto.TransactionRow r0 : rows) {
+                pw.printf("%s,%s,%s,%.2f,%s,%s,%s,%s,%s,%s%n",
+                        r0.category(), nullSafe(r0.id()), nullSafe(r0.occurredAt()),
                         r0.amount() == null ? 0.0 : r0.amount(),
-                        csv(r0.method()), csv(r0.description()),
-                        csv(r0.userName()), csv(r0.userEmail()),
-                        csv(r0.referenceType()), nullSafe(r0.referenceId()),
+                        csv(r0.method()), csv(r0.direction()),
+                        csv(r0.counterparty()),
+                        csv(r0.source()), nullSafe(r0.referenceId()),
                         csv(r0.status()));
             }
         }
@@ -120,16 +100,9 @@ public class AdminReportsController {
             @PathVariable Long eventId,
             @RequestParam(defaultValue = "csv") String format
     ) throws Exception {
-        Event event = eventRepo.findById(eventId).orElseThrow();
 
-        // Income: approved event payments
-        List<Payment> income = paymentRepo.findApprovedEventPayments(eventId);
-
-        // Expenses: approved bills for event (if you track)
-        List<Bill> expenses = billRepo.findApprovedByEvent(eventId);
-
-        EventFinancialReport report = EventFinancialReport.from(event, income, expenses);
-
+        EventFinancialDto report = reportService.eventFinancial(eventId);
+        Event event = eventRepo.findById(eventId).orElse(null);
         if ("json".equalsIgnoreCase(format)) {
             resp.setContentType(MediaType.APPLICATION_JSON_VALUE);
             String json = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(report);
@@ -143,37 +116,24 @@ public class AdminReportsController {
             pw.printf("Date,%s%n", event.getDate());
             pw.println();
 
-            pw.println("INCOME");
-            pw.println("paymentId,date,amount,method,description,userName,userEmail,confirmation");
-            for (Payment p : income) {
-                pw.printf("%d,%s,%.2f,%s,%s,%s,%s,%s%n",
-                        p.getId(),
-                        p.getPaymentDate(),
-                        p.getAmount() == null ? 0.0 : p.getAmount(),
-                        csv(p.getPaymentMethod()),
-                        csv(p.getDescription()),
-                        csv(p.getUser() != null ? (p.getUser().getFirstName() + " " + p.getUser().getLastName()) : ""),
-                        csv(p.getUser() != null ? p.getUser().getEmail() : ""),
-                        csv(p.getConfirmation()));
+            pw.println("id,category,date,amount,method,direction,contect,counterparty,source");
+            for(org.agraharam.dto.TransactionRow p: report.rows()){
+            
+                pw.printf("%d,%s,%s,%.2f,%s,%s,%s,%s,%s%n",
+                        p.id(),
+                        p.category(),
+                        p.occurredAt(),
+                        p.amount() == null ? 0.0 : p.amount(),
+                        csv(p.method()),
+                        csv(p.direction()),
+                        csv(p.context()),
+                        csv(p.counterparty()),
+                        csv(p.source()));
             }
 
             pw.println();
-            pw.println("EXPENSES");
-            pw.println("billId,date,amount,description,submittedBy,zelleId");
-            for (Bill b : expenses) {
-                User user = userRepo.findById(b.getMemberId()).orElse(null);
-                pw.printf("%d,%s,%.2f,%s,%s,%s%n",
-                        b.getId(),
-                        b.getSubmittedDate(),
-                        b.getAmount() == null ? 0.0 : b.getAmount(),
-                        csv(b.getDescription()),
-                        csv(user.getFirstName() +" "+user.getLastName()),
-                        csv(b.getZelleId()));
-            }
-
-            pw.println();
-            pw.printf("Totals,,Income,%.2f,Expenses,%.2f,Net,%.2f%n",
-                    report.totalIncome(), report.totalExpenses(), report.net());
+            pw.printf("Totals,,Income,%.2f,Refunds,%.2f,Vendor Expenses,%.2f,Bills,%.2f,Net,%.2f%n",
+                    report.income(), report.refunds(), report.vendorExpenses(), report.bills(), report.net());
         }
     }
 

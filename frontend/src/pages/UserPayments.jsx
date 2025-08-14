@@ -17,7 +17,7 @@ export default function UserPayments() {
     const fetchData = async () => {
       try {
         const [paymentData, billData] = await Promise.all([
-          api.get(`/api/user/payments?userId=${userId}`),
+          api.get(`/api/user/paymentsAndRefunds?userId=${userId}`),
           api.get(`/api/user/bills?userId=${userId}`)
         ]);
         setPayments(paymentData);

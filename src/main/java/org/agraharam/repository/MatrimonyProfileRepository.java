@@ -2,6 +2,8 @@ package org.agraharam.repository;
 
 import org.agraharam.model.MatrimonyProfile;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -18,6 +20,12 @@ public interface MatrimonyProfileRepository extends JpaRepository<MatrimonyProfi
     List<MatrimonyProfile> findByStatusAndNameContainingIgnoreCase(String status, String name);
 
     boolean existsByFamilyIdAndStatus(Long familyId, String status);
+
+    @Query("SELECT p FROM MatrimonyProfile p WHERE " +
+    "LOWER(p.status) = 'approved' AND " +
+       "(LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+       "LOWER(p.contactEmail) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<MatrimonyProfile> searchApprovedByNameOrEmail(@Param("query") String query);
 
     
 

@@ -65,6 +65,11 @@ export default function AdminSidebar({ isOpen = true }) {
     { to: '/admin/reports', label: 'Reports', icon: ChartBarIcon },
   ];
 
+  const matrimonyLinks = [
+    { to: '/matrimony-approval', label: 'Matrimony Approval', icon: UsersIcon },
+    { to: '/admin/matrimony/directory', label: 'Matrimony Directory', icon: UsersIcon },
+  ];
+
   // Dashboard (always visible)
   const topLinks = [{ to: '/admin/dashboard', label: 'Dashboard', icon: WrenchIcon }];
 
@@ -82,6 +87,7 @@ export default function AdminSidebar({ isOpen = true }) {
         super: saved.super ?? true,
         events: saved.events ?? true,
         reports: saved.reports ?? false,
+        matrimony: saved.matrimony ?? false,
       };
     } catch {
       return { finance: true, youth: true, super: true, events: true, reports: false };
@@ -166,6 +172,12 @@ export default function AdminSidebar({ isOpen = true }) {
           ))}
         </Section>
       )}
+      {/* Matrimony */}
+      <Section title="Matrimony" id="matrimony">
+        {matrimonyLinks.map((l) => (
+          <LinkItem key={l.to} {...l} />
+        ))}
+      </Section>
 
       {/* Reports */}
       <Section title="Reports" id="reports">

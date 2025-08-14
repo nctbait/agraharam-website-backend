@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.transaction.Transactional;
+
 @RestController
 @RequestMapping("/api/matrimony")
 public class MatrimonyController {
@@ -37,16 +39,16 @@ public class MatrimonyController {
     private UserRepository userRepository;
 
     @Autowired
-    private  AuditLogServiceImpl auditLogService;
+    private AuditLogServiceImpl auditLogService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody MatrimonyProfile profile) {
         profile.setStatus("pending");
         MatrimonyProfile saved = repository.save(profile);
 
-        auditLogService.log("MATRIMONY_REGISTRATION", saved.getContactEmail(), 
-        "MatrimonyProfile", String.valueOf(saved.getId()), 
-        "MATRIMONY_REGISTRATION Submitted by :"+ saved.getContactEmail());
+        auditLogService.log("MATRIMONY_REGISTRATION", saved.getContactEmail(),
+                "MatrimonyProfile", String.valueOf(saved.getId()),
+                "MATRIMONY_REGISTRATION Submitted by :" + saved.getContactEmail());
         return ResponseEntity.ok(saved.getId());
     }
 
@@ -66,9 +68,19 @@ public class MatrimonyController {
         return repository.findByStatus("pending");
     }
 
+    @GetMapping("/profile-search")
+    @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    public List<MatrimonyProfile> getApprovedProfiles(@RequestParam("query") String query) {
+        String q = query == null ? "" : query.trim();
+        if (q.isEmpty())
+            return List.of(); // prevent dumping the table
+        return repository.searchApprovedByNameOrEmail(q);
+    }
+
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body,Principal principal) {
+    public ResponseEntity<?> approve(@PathVariable Long id, @RequestBody(required = false) Map<String, Object> body,
+            Principal principal) {
         Long familyId = null;
         if (body != null && body.containsKey("familyId")) {
             Object raw = body.get("familyId");
@@ -85,22 +97,52 @@ public class MatrimonyController {
             p.setFamilyId(familyId);
         repository.save(p);
 
-        auditLogService.log("APPROVE_MATRIMONY", principal.getName(), 
-        "MatrimonyProfile", String.valueOf(p.getId()), 
-        "APPROVE_MATRIMONY by :"+ principal.getName());
+        auditLogService.log("APPROVE_MATRIMONY", principal.getName(),
+                "MatrimonyProfile", String.valueOf(p.getId()),
+                "APPROVE_MATRIMONY by :" + principal.getName());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
-    public ResponseEntity<?> reject(@PathVariable Long id,Principal principal) {
+    public ResponseEntity<?> reject(@PathVariable Long id, Principal principal) {
         MatrimonyProfile p = repository.findById(id).orElseThrow();
         p.setStatus("rejected");
         repository.save(p);
+        auditLogService.log("REJECT_MATRIMONY", principal.getName(),
+                "MatrimonyProfile", String.valueOf(p.getId()),
+                "REJECT_MATRIMONY by :" + principal.getName());
+        return ResponseEntity.ok().build();
+    }
 
-        auditLogService.log("REJECT_MATRIMONY", principal.getName(), 
-        "MatrimonyProfile", String.valueOf(p.getId()), 
-        "REJECT_MATRIMONY by :"+ principal.getName());
+    @PostMapping("/{id}/disable")
+    @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    @Transactional
+    public ResponseEntity<?> disable(@PathVariable Long id, Principal principal) {
+        MatrimonyProfile p = repository.findById(id).orElseThrow();
+
+        String status = p.getStatus() == null ? "" : p.getStatus();
+        boolean alreadyDisabled = status.equalsIgnoreCase("disabled") || status.equalsIgnoreCase("disable");
+        if (alreadyDisabled) {
+            auditLogService.log("DISABLE_MATRIMONY_NOOP", principal.getName(),
+                    "MatrimonyProfile", String.valueOf(p.getId()),
+                    "Profile already disabled");
+            return ResponseEntity.ok().build();
+        }
+
+        if (!status.equalsIgnoreCase("approved")) {
+            auditLogService.log("DISABLE_MATRIMONY_DENIED", principal.getName(),
+                    "MatrimonyProfile", String.valueOf(p.getId()),
+                    "Invalid transition from status=" + status);
+            return ResponseEntity.status(409).body("Profile must be APPROVED to disable.");
+        }
+
+        p.setStatus("disabled"); // normalize
+        repository.save(p);
+        auditLogService.log("DISABLE_MATRIMONY", principal.getName(),
+                "MatrimonyProfile", String.valueOf(p.getId()),
+                "Disabled matrimony profile");
+
         return ResponseEntity.ok().build();
     }
 

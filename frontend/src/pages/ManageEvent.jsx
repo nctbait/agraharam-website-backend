@@ -25,6 +25,9 @@ export default function ManageEvents() {
   const handleEdit = (eventId) => {
     navigate(`/edit-event/${eventId}`);
   };
+  const handleCheckIn = (eventId) => {
+    navigate(`/events/${eventId}/checkin`);
+  };
   const handleDelete = (eventId) => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
 
@@ -93,6 +96,12 @@ export default function ManageEvents() {
                   </div>
 
                   <div className="flex flex-col gap-2 items-end">
+                  <button
+                      onClick={() => handleCheckIn(event.id)}
+                      className="h-9 px-4 rounded-full text-white bg-[#0c77f2] text-sm font-medium"
+                    >
+                      Checkin
+                    </button>
                     <button
                       onClick={() => handleEdit(event.id)}
                       className="h-9 px-4 rounded-full text-white bg-[#0c77f2] text-sm font-medium"

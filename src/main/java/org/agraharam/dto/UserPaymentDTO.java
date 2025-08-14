@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.agraharam.model.Donation;
 import org.agraharam.model.Payment;
+import org.agraharam.model.Refund;
 
 public record UserPaymentDTO(LocalDateTime date, Double amount, String description, String status) {
     public static UserPaymentDTO from(Payment p) {
@@ -20,6 +21,14 @@ public record UserPaymentDTO(LocalDateTime date, Double amount, String descripti
             d.getAmount(), 
             d.getReason(), 
             d.getStatus())
+        ;
+    }
+    public static UserPaymentDTO from(Refund r) {
+        return new UserPaymentDTO(
+            r.getCreatedAt().toLocalDateTime(), 
+            - r.getAmountRequested().doubleValue(), 
+            r.getReason(), 
+            r.getStatus().name())
         ;
     }
 

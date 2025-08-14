@@ -67,6 +67,8 @@ import VendorPaymentCreate from './pages/VendorPaymentCreate';
 import VendorPaymentList from './pages/VendorPaymentList';
 import RefundCreate from './pages/RefundCreate';
 import RefundList from './pages/RefundList';
+import AdminMatrimonyDirectory from './pages/AdminMatrimonyDirectory';
+import AdminEventCheckIn from './pages/AdminEventCheckIn';
 
 function App() {
   //useAutoLogout();
@@ -89,10 +91,27 @@ function App() {
       <Route path="/terms" element={<TermsAndConditions />} />
 
       <Route
+        path="/events/:eventId/checkin"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminEventCheckIn />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/refunds"
         element={
           <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
             <RefundList />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/matrimony/directory"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminMatrimonyDirectory />
           </ProtectedRoute>
         }
       />
