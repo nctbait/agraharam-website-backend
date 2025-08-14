@@ -23,9 +23,9 @@ public class Event {
     private LocalTime time;
     private String location;
     private String locationUrl;
-    private Integer capacity;
+    private Integer capacity;//0 initiall so people cant register yet, when ready give it actual capacity
     private Boolean waitlist;
-    private LocalDate registrationDeadline;
+    private LocalDate registrationDeadline;//can use this to stop registrations
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PricingTier> pricing;

@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 import api from '../api/authAxios';
+import AsyncSelect from 'react-select/async';
 
 /**
  * RefundCreate.jsx
@@ -21,9 +22,12 @@ export default function RefundCreate() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  // 1) add a separate state just for the select's option
+  const [requesterUserOption, setRequesterUserOption] = useState(null);
+
 
   // If you want smart pickers later (e.g., choose an event registration), we can add them.
-  const referenceTypes = ['VendorPayment','EventRegistration','Membership','Donation','Other'];
+  const referenceTypes = ['VendorPayment', 'EventRegistration', 'Membership', 'Donation', 'Other'];
 
   const [form, setForm] = useState({
     referenceType: 'EventRegistration',
@@ -47,6 +51,16 @@ export default function RefundCreate() {
     return null;
   };
 
+  // 2) return a Promise from loadOptions (simpler than callback form)
+  const loadUserOptions = async (inputValue) => {
+    const res = await api.get(`/api/family/user-search`, { params: { query: inputValue || '' } });
+    return (res || []).map(u => ({
+      value: u.id,
+      label: `${u.firstName} ${u.lastName} (${u.email})`,
+    }));
+  };
+
+
   const submit = async (e) => {
     e.preventDefault();
     setError('');
@@ -59,7 +73,7 @@ export default function RefundCreate() {
         referenceType: form.referenceType,
         referenceId: Number(form.referenceId),
         originalPaymentId: form.originalPaymentId ? Number(form.originalPaymentId) : null,
-        requesterUserId: form.requesterUserId ? Number(form.requesterUserId) : null,
+        requesterUserId: requesterUserOption ? Number(requesterUserOption.value) : null,
         amountRequested: Number(form.amountRequested),
         reason: form.reason || null,
       };
@@ -129,13 +143,16 @@ export default function RefundCreate() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium">Requester User ID (optional)</label>
-                  <input
-                    name="requesterUserId"
-                    value={form.requesterUserId}
-                    onChange={onChange}
-                    inputMode="numeric"
-                    className="mt-1 w-full rounded-lg border px-3 py-2"
+                  <AsyncSelect
+                    cacheOptions
+                    defaultOptions
+                    isClearable
+                    loadOptions={loadUserOptions}
+                    value={requesterUserOption}                 // <- the option object
+                    onChange={(opt) => setRequesterUserOption(opt)}  // <- store the option object
+                    placeholder="Assign to user..."
                   />
+
                 </div>
               </div>
 

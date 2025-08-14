@@ -60,7 +60,7 @@ public class EventController {
     }
 
     @GetMapping("/upcoming")
-    @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    @PreAuthorize("hasAuthority('user') or hasAuthority('admin') or hasAuthority('superAdmin')")
     public List<EventSummary> getUpcomingEvents() {
         return eventRepository.findByDateAfter(LocalDate.now()).stream()
                 .map(EventSummary::from) // map to DTO
@@ -89,7 +89,7 @@ public class EventController {
     }
 
     @GetMapping("/get/{eventId}")
-    @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
+    @PreAuthorize("hasAuthority('user') or hasAuthority('admin') or hasAuthority('superAdmin')")
     public ResponseEntity<EventSummary> getEventById(@PathVariable Long eventId) {
         return eventRepository.findById(eventId)
                 .map(event -> ResponseEntity.ok(EventSummary.from(event)))

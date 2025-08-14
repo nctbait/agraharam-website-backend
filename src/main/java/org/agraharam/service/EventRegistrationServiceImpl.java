@@ -269,7 +269,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
                         event.getId(),
                         event.getTitle(),
                         event.getDate(),
-                        event.getLocation()))
+                        event.getLocation(),event.getRegistrationDeadline(),event.getCapacity()))
                 .toList();
     }
 
@@ -287,7 +287,7 @@ public class EventRegistrationServiceImpl implements EventRegistrationService {
                         event.getId(),
                         event.getTitle(),
                         event.getDate(),
-                        event.getLocation()))
+                        event.getLocation(),event.getRegistrationDeadline(),event.getCapacity()))
                 .toList();
     }
 

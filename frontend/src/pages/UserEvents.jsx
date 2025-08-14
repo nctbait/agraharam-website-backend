@@ -108,24 +108,50 @@ export default function UserEvents() {
           <section className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Available Events</h2>
             <div className="flex flex-col gap-4">
-              {Array.isArray(availableEvents) && availableEvents.map((event) => (
-                <div key={event.id} className="rounded-xl p-4 border border-gray-300 bg-white shadow-sm">
-                  <p className="text-base font-bold">{event.title || event.eventName}</p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(event.date || event.dateTime).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm text-gray-700">{event.venue}</p>
-                  <button
-                    onClick={() => handleEventReg(event.id)}
-                    className="mt-2 rounded-full bg-blue-500 px-4 py-2 text-white text-sm"
+              {Array.isArray(availableEvents) && availableEvents.map((event) => {
+                const capacityAvailable = event.capacity > 0;
+                const deadlineValid = !event.registrationDeadline || new Date(event.registrationDeadline) >= new Date();
+                const deadlineDate = event.registrationDeadline ? new Date(event.registrationDeadline) : null;
+
+                const canRegister = capacityAvailable && deadlineValid;
+
+                return (
+                  <div
+                    key={event.id}
+                    className={`rounded-xl p-4 border shadow-sm ${canRegister ? 'bg-white border-gray-300' : 'bg-gray-100 border-gray-200 opacity-75'
+                      }`}
                   >
-                    Register
-                  </button>
-                </div>
-              ))}
+                    <p className="text-base font-bold">{event.title || event.eventName}</p>
+                    <p className="text-sm text-gray-600">
+                      {new Date(event.date || event.dateTime).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-700">{event.venue}</p>
+
+                    {deadlineDate && (
+                      <p className="text-xs text-gray-500">
+                        Registration deadline: {deadlineDate.toLocaleDateString()}
+                      </p>
+                    )}
+
+                    {canRegister ? (
+                      <button
+                        onClick={() => handleEventReg(event.id)}
+                        className="mt-2 rounded-full bg-blue-500 px-4 py-2 text-white text-sm"
+                      >
+                        Register
+                      </button>
+                    ) : (
+                      <p className="mt-2 text-sm font-medium text-red-600">
+                        {capacityAvailable
+                          ? 'Registration deadline has passed'
+                          : 'Event not open for registration yet'}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
-
           {/* Registered */}
           <section className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Registered Events</h2>
@@ -148,11 +174,10 @@ export default function UserEvents() {
                       </p>
                       <p className="text-sm mt-1">
                         <span
-                          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
-                            event.status === 'CANCELLED'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-green-100 text-green-700'
-                          }`}
+                          className={`inline-block px-2 py-1 rounded text-xs font-semibold ${event.status === 'CANCELLED'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-green-100 text-green-700'
+                            }`}
                         >
                           {event.status}
                         </span>

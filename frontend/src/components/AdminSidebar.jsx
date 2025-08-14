@@ -49,8 +49,8 @@ export default function AdminSidebar({ isOpen = true }) {
   ];
 
   const superAdminLinks = [
-    { to: '/admin/user-roles', label: 'User Role Management', icon: UsersIcon },
     { to: '/admin/approvals', label: 'Registration Approvals', icon: ClipboardDocumentListIcon },
+    { to: '/admin/user-roles', label: 'User Role Management', icon: UsersIcon },
     { to: '/admin/audit-logs', label: 'Audit Logs', icon: DocumentTextIcon },
     { to: '/admin/notification-management', label: 'Notification Templates', icon: BellIcon },
   ];

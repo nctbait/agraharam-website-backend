@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import org.agraharam.enums.AccessRole;
 import org.agraharam.enums.Gender;
+import org.agraharam.enums.MaritalStatus;
 import org.agraharam.enums.Role;
 
 @Entity
@@ -34,6 +35,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
      private Role role;
+     
+     @Enumerated(EnumType.STRING)
+    private MaritalStatus maritalStatus = MaritalStatus.Single;
 
     @Column(name = "has_login")
     private boolean hasLogin;
@@ -56,7 +60,7 @@ public class User {
         
     }
     
-    public User(Family family, String firstName, String lastName, String email, String phoneNumber, String gender, String role, boolean hasLogin, boolean approved){
+    public User(Family family, String firstName, String lastName, String email, String phoneNumber, String gender, String role, boolean hasLogin, boolean approved,MaritalStatus maritalStatus){
         this.family = family;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -66,6 +70,7 @@ public class User {
         this.role = Role.valueOf(role);
         this.hasLogin = hasLogin;
         this.approved = approved;
+        this.maritalStatus = maritalStatus;
     }
     // Constructors, getters, setters
 }

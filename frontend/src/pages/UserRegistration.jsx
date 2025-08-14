@@ -17,6 +17,7 @@ export default function UserRegistration() {
     phone: '',
     email: '',
     password: '',
+    maritalStatus: 'Married',
     spouseFirstName: '',
     spouseLastName: '',
     spouseGender: '',
@@ -32,6 +33,13 @@ export default function UserRegistration() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === 'maritalStatus' && value) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.maritalStatus;
+        return newErrors;
+      });
+    }
   };
 
   const API_BASE = process.env.REACT_APP_API_BASE_URL;
@@ -45,6 +53,7 @@ export default function UserRegistration() {
       });
       return;
     }
+    if (!form.maritalStatus) return setFieldErrors({maritalStatus:"Please select marital status"});
     try {
       await axios.post(`${API_BASE}/api/register`, form);
       setStatusMessage("Registration submitted.");
@@ -55,7 +64,7 @@ export default function UserRegistration() {
       } else {
         setStatusMessage("Something went wrong.");
       }
-    }    
+    }
   };
 
 
@@ -84,24 +93,41 @@ export default function UserRegistration() {
               <option value="Atharva">Atharva</option>
             </select>
             <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="Phone Number" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-            <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" className={`form-input h-12 rounded-xl border px-4 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}/>
+            <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email" className={`form-input h-12 rounded-xl border px-4 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`} />
             {fieldErrors.email && <p className="text-sm text-red-600 mt-1">{fieldErrors.email}</p>}
 
             <input type="password" name="password" value={form.password} onChange={handleChange} placeholder="Password (min 15 chars)" minLength={15} className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-
-            {/* Spouse Details */}
-            <input name="spouseFirstName" value={form.spouseFirstName} onChange={handleChange} placeholder="Spouse First Name" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-            <input name="spouseLastName" value={form.spouseLastName} onChange={handleChange} placeholder="Spouse Last Name" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-            <select name="spouseGender" value={form.spouseGender} onChange={handleChange} className="form-input h-12 rounded-xl border border-gray-300 px-4">
-              <option value="">Select your gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
+            <select
+              name="maritalStatus"
+              value={form.maritalStatus}
+              onChange={handleChange}
+              className={`form-input h-12 rounded-xl border border-gray-300 px-4"
+              ${fieldErrors.maritalStatus ? 'border-red-500' : 'border-gray-300'}`}
+            >
+              <option value="">Select Marital Status</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Divorced">Divorced</option>
+              <option value="Separated">Separated</option>
             </select>
-            <input type="email" name="spouseEmail" value={form.spouseEmail} onChange={handleChange} placeholder="Spouse Email" className={`form-input h-12 rounded-xl border px-4 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`}/>
-            {fieldErrors.spouseEmail && <p className="text-sm text-red-600 mt-1">{fieldErrors.spouseEmail}</p>}
-            <input type="tel" name="spousePhone" value={form.spousePhone} onChange={handleChange} placeholder="Spouse Phone Number" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-
+            {fieldErrors.maritalStatus && <p className="text-sm text-red-600 mt-1">{fieldErrors.maritalStatus}</p>}
+            {/* Spouse Details */}
+            {form.maritalStatus === 'Married' && (
+              <>
+                <input name="spouseFirstName" value={form.spouseFirstName} onChange={handleChange} placeholder="Spouse First Name" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+                <input name="spouseLastName" value={form.spouseLastName} onChange={handleChange} placeholder="Spouse Last Name" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+                <select name="spouseGender" value={form.spouseGender} onChange={handleChange} className="form-input h-12 rounded-xl border border-gray-300 px-4">
+                  <option value="">Select your gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <input type="email" name="spouseEmail" value={form.spouseEmail} onChange={handleChange} placeholder="Spouse Email" className={`form-input h-12 rounded-xl border px-4 ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'}`} />
+                {fieldErrors.spouseEmail && <p className="text-sm text-red-600 mt-1">{fieldErrors.spouseEmail}</p>}
+                <input type="tel" name="spousePhone" value={form.spousePhone} onChange={handleChange} placeholder="Spouse Phone Number" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
+              </>
+            )}
             {/* Home Address */}
             <input name="street" value={form.street} onChange={handleChange} placeholder="Street of Residence" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
             <input name="city" value={form.city} onChange={handleChange} placeholder="City of Residence" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
@@ -114,7 +140,7 @@ export default function UserRegistration() {
             <button type="submit" className="rounded-xl h-10 px-6 bg-blue-600 text-white text-sm font-bold">Submit</button>
           </div>
         </form>
-        
+
         {statusMessage && (
           <div className="mt-4 text-center text-green-600 font-semibold">
             {statusMessage}

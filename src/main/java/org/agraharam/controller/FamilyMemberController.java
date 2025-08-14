@@ -108,19 +108,22 @@ public class FamilyMemberController {
     }
 
     @GetMapping("/spouse")
-    public SpouseDTO getSpouse(Principal principal) {
+    public ResponseEntity<SpouseDTO> getSpouse(Principal principal) {
         User primary = userRepo.findByEmail(principal.getName()).orElseThrow();
-        User spouse = primary.getFamily().getUsers().stream()
-                .filter(u -> u.getRole().name().equals("spouse"))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Spouse not found"));
 
-        return new SpouseDTO(
-                spouse.getId(),
-                spouse.getFirstName(),
-                spouse.getLastName(),
-                spouse.getEmail(),
-                spouse.getPhoneNumber());
+        SpouseDTO dto = primary.getFamily().getUsers().stream()
+                .filter(u -> u.getRole() != null && u.getRole().name().equalsIgnoreCase("spouse"))
+                .findFirst()
+                .map(u -> new SpouseDTO(
+                        u.getId(),
+                        u.getFirstName(),
+                        u.getLastName(),
+                        u.getEmail(),
+                        u.getPhoneNumber()))
+                .orElse(null);
+
+        // 200 with body if found, 204 No Content if not
+        return (dto != null) ? ResponseEntity.ok(dto) : ResponseEntity.noContent().build();
     }
 
     @GetMapping("/primary")
@@ -181,17 +184,16 @@ public class FamilyMemberController {
     }
 
     @GetMapping("/user-search")
-    public List<UserSearchResult> getUserbyNameofEmail(@RequestParam("query") String query){
-        return userRepo.searchByNameOrEmail(query).stream().filter(u -> u.getRole().name().equals("primary") && u.isHasLogin())
-        .map(u -> new UserSearchResult(
-                u.getId(),
-                u.getFamily().getId(),
-                u.getFirstName(),
-                u.getLastName(),
-                u.getEmail()
-            )
-        )
-        .toList();
+    public List<UserSearchResult> getUserbyNameofEmail(@RequestParam("query") String query) {
+        return userRepo.searchByNameOrEmail(query).stream()
+                .filter(u -> u.getRole().name().equals("primary") && u.isHasLogin())
+                .map(u -> new UserSearchResult(
+                        u.getId(),
+                        u.getFamily().getId(),
+                        u.getFirstName(),
+                        u.getLastName(),
+                        u.getEmail()))
+                .toList();
     }
 
 }

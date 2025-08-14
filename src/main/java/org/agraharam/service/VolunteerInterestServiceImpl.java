@@ -173,7 +173,7 @@ public class VolunteerInterestServiceImpl implements VolunteerInterestService {
                     });
                 } else {
                     familyMemRepo.findById(vi.getFamilyMemberId()).ifPresent(child -> {
-                        newDto.setMemberName(child.getName() + " (Age "+child.getAge()+")");
+                        newDto.setMemberName(child.getName() + " (Age " + child.getAge() + ")");
                     });
 
                     // Fetch primary's phone/email via familyId
@@ -193,7 +193,9 @@ public class VolunteerInterestServiceImpl implements VolunteerInterestService {
                             event.getId(),
                             event.getTitle(),
                             event.getDate(),
-                            event.getLocation());
+                            event.getLocation(), 
+                            event.getRegistrationDeadline(), 
+                            event.getCapacity());
                     dto.getEvents().add(edto);
                 });
             }

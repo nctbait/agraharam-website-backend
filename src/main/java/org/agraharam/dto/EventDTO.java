@@ -6,6 +6,8 @@ public record EventDTO(
     Long id,
     String title,
     LocalDate date,
-    String venue
+    String venue,
+    LocalDate registrationDeadline,
+    Integer capacity
     ) {}
 
