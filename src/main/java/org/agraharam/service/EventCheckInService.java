@@ -6,7 +6,6 @@ import org.agraharam.dto.CheckInUpdateDTO;
 import org.agraharam.dto.RegistrationAttendeesDTO;
 import org.agraharam.enums.EventStatus;
 import org.agraharam.model.EventAttendance;
-import org.agraharam.model.EventAttendance.PersonType;
 import org.agraharam.model.EventRegistration;
 import org.agraharam.repository.EventAttendanceRepository;
 import org.agraharam.repository.EventRegistrationRepository;
@@ -258,9 +257,6 @@ public class EventCheckInService {
         return s == null ? "" : s;
     }
 
-    private static boolean equalsIgnoreCase(String a, String b) {
-        return a != null && b != null && a.equalsIgnoreCase(b);
-    }
 
     private static String niceRole(String role) {
         if (role == null || role.isBlank())

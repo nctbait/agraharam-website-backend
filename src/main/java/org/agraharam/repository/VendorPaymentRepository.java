@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.LockModeType;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

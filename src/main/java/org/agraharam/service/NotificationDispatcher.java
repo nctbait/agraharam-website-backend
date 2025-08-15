@@ -1,7 +1,6 @@
 package org.agraharam.service;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,9 +25,6 @@ public class NotificationDispatcher {
 
     @Autowired
     private NotificationService notificationService;
-
-    @Autowired
-    private UserRepository userRepo;
 
     private EventRegistrationRepository eventRegistrationRepo;
 

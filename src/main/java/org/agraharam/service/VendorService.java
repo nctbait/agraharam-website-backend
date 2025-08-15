@@ -1,7 +1,5 @@
 package org.agraharam.service;
 
-import java.security.Principal;
-
 import org.agraharam.dto.CreateVendorRequest;
 import org.agraharam.dto.UpdateVendorRequest;
 import org.agraharam.dto.VendorDTO;

@@ -2,7 +2,6 @@ package org.agraharam.repository;
 
 import jakarta.persistence.LockModeType;
 
-import org.agraharam.dto.TransactionRow;
 import org.agraharam.enums.RefundReferenceType;
 import org.agraharam.enums.RefundStatus;
 import org.agraharam.model.Refund;
@@ -12,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

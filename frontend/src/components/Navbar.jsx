@@ -29,15 +29,23 @@ export default function Navbar() {
   return (
     <header className="border-b border-gray-200 bg-white sticky top-0 z-30">
       <div className="flex items-center justify-between px-4 py-3 lg:px-10">
-        <div className="flex items-center gap-4 text-black">
-          <div className="text-xl font-bold">🏠</div>
-          <h2 className="text-lg font-bold">NCTBA - Agraharam NC</h2>
-        </div>
+      <Link to="/" className="flex items-center gap-3 text-black">
+          <img
+            src="/images/Agraharam_Logo_Transperant_Background.png"
+            alt="NCTBA - Agraharam NC"
+            className="h-8 sm:h-9 md:h-10 w-auto object-contain shrink-0"
+            loading="eager"
+            decoding="async"
+          />
+          <h2 className="text-base sm:text-lg font-bold tracking-tight">
+            NCTBA - Agraharam NC
+          </h2>
+        </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden lg:flex gap-6">
           <Link className="text-sm font-medium" to="/">Home</Link>
-          <Link className="text-sm font-medium" to="/public-events">Events</Link>
+          {/*<Link className="text-sm font-medium" to="/public-events">Events</Link>*/}
           <Link className="text-sm font-medium" to="/committees">Committees</Link>
           <Link className="text-sm font-medium" to="/matrimony_reg">Matrimony</Link>
           <Link className="text-sm font-medium" to="/donate">Donate</Link>
@@ -111,7 +119,7 @@ export default function Navbar() {
       <nav id="mobileMenu" className="lg:hidden px-4 pb-4 hidden">
         <ul className="space-y-2">
           <li><Link to="/" className="block text-sm font-medium">Home</Link></li>
-          <li><Link to="/public-events" className="block text-sm font-medium">Events</Link></li>
+          {/* <li><Link to="/public-events" className="block text-sm font-medium">Events</Link></li>*/}
           <li><Link to="/committees" className="block text-sm font-medium">Committees</Link></li>
           <li><Link to="/matrimony_reg" className="block text-sm font-medium">Matrimony</Link></li>
           <li><Link to="/donate" className="block text-sm font-medium">Donate</Link></li>

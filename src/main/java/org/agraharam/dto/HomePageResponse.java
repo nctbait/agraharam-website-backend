@@ -9,7 +9,8 @@ public record HomePageResponse(
     List<String> banners,
     List<NewsItem> news,
     List<AdItem> ads,
-    NextEvent nextEvent
+    NextEvent nextEvent,
+    Mission mission
 ) {
   public record NewsItem(String title, String description, String image, String linkUrl) {}
 
@@ -27,4 +28,5 @@ public record HomePageResponse(
   ) {}
 
   public record NextEvent(Long id, String name, OffsetDateTime date, String ctaUrl, String imageUrl) {}
+  public record Mission(String title, String body, String ctaText, String ctaUrl) {} // NEW
 }

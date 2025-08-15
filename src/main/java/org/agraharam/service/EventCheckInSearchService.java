@@ -3,7 +3,6 @@ package org.agraharam.service;
 
 import java.util.List;
 
-import org.agraharam.dto.CheckinSearchRow;
 import org.agraharam.dto.CheckinSearchRowView;
 import org.agraharam.dto.CheckinToggleDTO;
 import org.agraharam.model.EventAttendance;

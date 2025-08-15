@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.agraharam.dto.UserBillDTO;
 import org.agraharam.dto.UserPaymentDTO;
-import org.agraharam.model.Donation;
 import org.agraharam.model.User;
 import org.agraharam.repository.BillRepository;
 import org.agraharam.repository.DonationRepository;

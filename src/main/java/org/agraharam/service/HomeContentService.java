@@ -41,8 +41,8 @@ public class HomeContentService {
         var ads = readAds(base);
 
         var nextEventDto = computeNextEvent();
-
-        return new HomePageResponse(announcements, banners, news, ads, nextEventDto);
+        var mission = readMission(base); // NEW
+        return new HomePageResponse(announcements, banners, news, ads, nextEventDto, mission);
     }
 
     @Transactional(readOnly = true)
@@ -52,7 +52,19 @@ public class HomeContentService {
                 readStringArray(base, "announcements"),
                 readStringArray(base, "banners"),
                 readNews(base),
-                readAds(base));
+                readAds(base),
+                readMission(base));
+    }
+
+    private HomePageResponse.Mission readMission(JsonNode base) {
+        var m = base.get("mission");
+        if (m == null || !m.isObject())
+            return null;
+        return new HomePageResponse.Mission(
+                text(m, "title"),
+                text(m, "body"),
+                text(m, "ctaText"),
+                text(m, "ctaUrl"));
     }
 
     @Transactional
@@ -63,6 +75,7 @@ public class HomeContentService {
             root.set("banners", om.valueToTree(req.banners()));
             root.set("news", om.valueToTree(req.news()));
             root.set("ads", om.valueToTree(req.ads()));
+            root.set("mission", om.valueToTree(req.mission()));
 
             var s = settingsRepo.findById(1L).orElseGet(() -> {
                 var n = new HomeSettings();

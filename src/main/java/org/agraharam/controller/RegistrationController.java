@@ -3,7 +3,6 @@ package org.agraharam.controller;
 import org.agraharam.repository.FamilyRepository;
 import org.agraharam.repository.UserRepository;
 import org.agraharam.service.AuditLogServiceImpl;
-import org.agraharam.service.EmailService;
 import org.agraharam.service.NotificationDispatcher;
 import org.agraharam.repository.PasswordRepository;
 import org.agraharam.repository.AddressRepository;

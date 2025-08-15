@@ -6,5 +6,6 @@ public record HomeAdminRequest(
     List<String> announcements,
     List<String> banners,
     List<HomePageResponse.NewsItem> news,
-    List<HomePageResponse.AdItem> ads
+    List<HomePageResponse.AdItem> ads,
+    HomePageResponse.Mission mission
 ) {}
