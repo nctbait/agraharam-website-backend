@@ -8,7 +8,7 @@ import { BellIcon } from '@heroicons/react/24/outline';
 export default function Navbar() {
   const { userRole } = useContext(AuthContext);
   const [hasNotifications, setHasNotifications] = useState(false);
-  const isLoggedIn = userRole !== 'guest';
+  const isLoggedIn = ['user', 'admin', 'superAdmin'].includes(userRole);  
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -12,4 +12,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     long countByDateGreaterThanEqual(LocalDate now);
 
+    // Load all events from today forward, already ordered by date/time
+    List<Event> findByDateGreaterThanEqualOrderByDateAscTimeAsc(LocalDate date);
 }

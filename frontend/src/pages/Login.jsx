@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,useSearchParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -10,6 +10,7 @@ export default function Login() {
   const API_BASE = process.env.REACT_APP_API_BASE_URL;
   const { setUserRole, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [params] = useSearchParams(); // NEW: read query params
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -31,8 +32,10 @@ export default function Login() {
       const role = decoded.accessRole;
   
       setUserRole(role);
-  
-      if (role === 'superAdmin' || role === 'admin') {
+      const redirect = params.get('redirect');
+      if (redirect) {
+        navigate(redirect, { replace: true });
+      } else if (role === 'superAdmin' || role === 'admin') {
         navigate('/admin-dashboard');
       } else {
         navigate('/dashboard');
