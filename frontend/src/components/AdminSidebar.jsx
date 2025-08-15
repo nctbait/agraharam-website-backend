@@ -17,7 +17,8 @@ import {
   BuildingStorefrontIcon,
   BanknotesIcon,
   UserPlusIcon,
-  ReceiptRefundIcon
+  ReceiptRefundIcon,
+  HomeIcon
 } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 
@@ -53,6 +54,7 @@ export default function AdminSidebar({ isOpen = true }) {
     { to: '/admin/user-roles', label: 'User Role Management', icon: UsersIcon },
     { to: '/admin/audit-logs', label: 'Audit Logs', icon: DocumentTextIcon },
     { to: '/admin/notification-management', label: 'Notification Templates', icon: BellIcon },
+    { to: '/admin/homepage/edit', label: 'Homepage Content', icon:HomeIcon},
   ];
 
   const eventLinks = [

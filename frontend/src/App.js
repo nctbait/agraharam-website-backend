@@ -69,6 +69,7 @@ import RefundCreate from './pages/RefundCreate';
 import RefundList from './pages/RefundList';
 import AdminMatrimonyDirectory from './pages/AdminMatrimonyDirectory';
 import AdminEventCheckIn from './pages/AdminEventCheckIn';
+import AdminHomeEditor from './pages/AdminHomeEditor';
 
 function App() {
   //useAutoLogout();
@@ -90,6 +91,14 @@ function App() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndConditions />} />
 
+      <Route
+        path="/admin/homepage/edit"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminHomeEditor />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/events/:eventId/checkin"
         element={
