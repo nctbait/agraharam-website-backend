@@ -46,7 +46,7 @@ export default function Navbar() {
         <nav className="hidden lg:flex gap-6">
           <Link className="text-sm font-medium" to="/">Home</Link>
           {/*<Link className="text-sm font-medium" to="/public-events">Events</Link>*/}
-          <Link className="text-sm font-medium" to="/committees">Committees</Link>
+          <Link className="text-sm font-medium" to="/committees">Services</Link>
           <Link className="text-sm font-medium" to="/matrimony_reg">Matrimony</Link>
           <Link className="text-sm font-medium" to="/donate">Donate</Link>
           {(userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
@@ -120,7 +120,7 @@ export default function Navbar() {
         <ul className="space-y-2">
           <li><Link to="/" className="block text-sm font-medium">Home</Link></li>
           {/* <li><Link to="/public-events" className="block text-sm font-medium">Events</Link></li>*/}
-          <li><Link to="/committees" className="block text-sm font-medium">Committees</Link></li>
+          <li><Link to="/committees" className="block text-sm font-medium">Services</Link></li>
           <li><Link to="/matrimony_reg" className="block text-sm font-medium">Matrimony</Link></li>
           <li><Link to="/donate" className="block text-sm font-medium">Donate</Link></li>
           {(userRole === 'user' || userRole === 'admin' || userRole === 'superAdmin') && (
