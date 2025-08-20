@@ -8,7 +8,7 @@ export default function Donate() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [members, setMembers] = useState([]);
   const [selectedMemberId, setSelectedMemberId] = useState('');
-  const [setCaptchaToken] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
   const [form, setForm] = useState({
     donorName: '',
     phone: '',
@@ -84,7 +84,7 @@ export default function Donate() {
       amount: parseFloat(form.amount),
       paymentMethod: form.paymentMethod,
       confirmationCode: form.confirmationCode,
-      captchaToken: form.captchaToken
+      captchaToken    
     };
 
     try {
