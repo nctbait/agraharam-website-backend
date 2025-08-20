@@ -79,7 +79,7 @@ public class RegistrationController {
     primary.setPassword(pwd);
     userRepo.save(primary);
     // emailService.sendRegistrationNotice(primary.getFirstName(), req.lastName);
-    dispatcher.dispatch("userRegistration", primary);
+    dispatcher.dispatch("onRegistration", primary);
     auditLog.log("REGISTER", req.email, "User", String.valueOf(primary.getId()),
         "Registertion of user submitted: " + primary.getId());
     return ResponseEntity.ok("Registered");

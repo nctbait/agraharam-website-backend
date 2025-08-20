@@ -2,6 +2,7 @@ package org.agraharam.model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +28,7 @@ public class Notification {
 
     private String type; // e.g., eventReminder
     private String title;
+     @Column(columnDefinition = "TEXT")
     private String message;
     private String targetUrl;
     private boolean notificationRead = false;

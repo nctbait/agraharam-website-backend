@@ -35,7 +35,7 @@ public class NotificationService {
         notification.setNotificationRead(false);
         notification.setTimestamp(LocalDateTime.now());
         notificationRepository.save(notification);
-
+        //System.out.println("email body: "+body);
         // Conditionally send email
         if ("email".equalsIgnoreCase(channel) && user.getEmail() != null) {
             try {
@@ -63,7 +63,7 @@ public class NotificationService {
         notification.setNotificationRead(false);
         notification.setTimestamp(LocalDateTime.now());
         notificationRepository.save(notification);
-
+        //System.out.println("email body: "+body);
         // Conditionally send email
         if ("email".equalsIgnoreCase(channel) && user.getEmail() != null) {
             try {
@@ -72,6 +72,7 @@ public class NotificationService {
                 message.setTo(user.getEmail());
                 message.setSubject(subject);
                 message.setText(body);
+                message.setCc("bods@agraharamnc.org");
                 mailSender.send(message);
             } catch (Exception e) {
                 // log error

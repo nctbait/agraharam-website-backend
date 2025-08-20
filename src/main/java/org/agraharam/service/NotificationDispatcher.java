@@ -11,7 +11,6 @@ import org.agraharam.model.User;
 import org.agraharam.model.VariableMapping;
 import org.agraharam.repository.EventRegistrationRepository;
 import org.agraharam.repository.EventRepository;
-import org.agraharam.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -55,11 +54,12 @@ public class NotificationDispatcher {
         for (VariableMapping v : variables) {
             try {
                 Object value = resolvePath(context, v.getSource());
-                result = result.replace("{{" + v.getName() + "}}", value != null ? value.toString() : "");
+                result = result.replace("{" + v.getName() + "}", value != null ? value.toString() : "");
             } catch (Exception e) {
-                result = result.replace("{{" + v.getName() + "}}", "");
+                result = result.replace("{" + v.getName() + "}", "");
             }
         }
+       // System.out.println("result:"+result);
         return result;
     }
 
