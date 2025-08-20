@@ -70,13 +70,15 @@ import RefundList from './pages/RefundList';
 import AdminMatrimonyDirectory from './pages/AdminMatrimonyDirectory';
 import AdminEventCheckIn from './pages/AdminEventCheckIn';
 import AdminHomeEditor from './pages/AdminHomeEditor';
+import SessionBoundary from './components/SessionBoundary';
 
 function App() {
   //useAutoLogout();
   const { logout } = useContext(AuthContext);
 
   return (
-
+<>
+<SessionBoundary/>
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/public-events" element={<PublicEvents />} />
@@ -586,6 +588,7 @@ function App() {
         }
       />
     </Routes>
+    </>
   );
 }
 

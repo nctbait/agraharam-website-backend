@@ -20,7 +20,8 @@ public class JwtTokenUtil {
     private String jwtSecret;
 
     private SecretKey secretKey;
-    private final long expirationMs = 86400000; // 1 day
+    @Value("${jwt.expirtyMs}")
+    private long expirationMs; // 1 day
 
     @PostConstruct
     public void init() {

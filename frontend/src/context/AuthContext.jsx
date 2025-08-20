@@ -1,5 +1,7 @@
 // AuthContext.js
 import { createContext, useState } from 'react';
+import { clearToken, triggerLogout } from '../auth/token';
+
 
 export const AuthContext = createContext();
 
@@ -21,8 +23,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {
-      localStorage.removeItem('jwtToken');
+      //localStorage.removeItem('jwtToken');
+      clearToken();
       setUserRole('guest');
+      triggerLogout("Signed out.");
     }
   };
 

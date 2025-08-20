@@ -1,12 +1,34 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate,useSearchParams } from 'react-router-dom';
+import React, { useState, useContext,useEffect } from 'react';
+import { useNavigate,useSearchParams,useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import { setToken } from '../auth/token';
 
 export default function Login() {
+  const location = useLocation();
+  //const [banner, setBanner] = useState(location?.state?.msg || null);
+    // Clear location.state so the banner doesn’t persist across navigations
+    const [banner, setBanner] = useState(() => {
+          // 1) try router state
+          const fromState = location?.state?.msg;
+          if (fromState) return fromState;
+          // 2) fallback: sessionStorage (covers full reloads / plain links)
+          const fromStore = sessionStorage.getItem('logout.msg');
+          if (fromStore) {
+            sessionStorage.removeItem('logout.msg');
+            return fromStore;
+          }
+          return null;
+        });
+ const nav = useNavigate();
+ useEffect(() => {
+     if (location?.state?.msg) {
+        nav(location.pathname, { replace: true, state: {} });
+      }
+    }, [location?.state?.msg, location.pathname, nav]);
   const API_BASE = process.env.REACT_APP_API_BASE_URL;
   const { setUserRole, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -25,7 +47,8 @@ export default function Login() {
       const { token } = response.data;
   
       // Store token securely (e.g. localStorage or memory)
-      localStorage.setItem('jwtToken', token);
+      //localStorage.setItem('jwtToken', token);
+      setToken(token); 
   
       // Decode token to extract role (e.g., with jwt-decode)
       const decoded = jwtDecode(token);
@@ -36,9 +59,9 @@ export default function Login() {
       if (redirect) {
         navigate(redirect, { replace: true });
       } else if (role === 'superAdmin' || role === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/admin-dashboard', { replace: true, state: {} });
       } else {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true, state: {} });
       }
     } catch (err) {
       console.error("Login failed", err);
@@ -51,6 +74,18 @@ export default function Login() {
       <Navbar />
       <main className="flex flex-1 items-center justify-center px-4 py-10 bg-white">
         <div className="w-full max-w-md mx-auto bg-white rounded-xl shadow p-6 sm:p-10">
+        {banner && (
+            <div className="mb-4 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm flex items-start justify-between gap-3">
+              <span>{banner}</span>
+              <button
+                onClick={() => setBanner(null)}
+                className="text-xs underline"
+                aria-label="Dismiss"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">Welcome back</h2>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <label className="flex flex-col">
