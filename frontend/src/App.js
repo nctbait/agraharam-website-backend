@@ -71,6 +71,8 @@ import AdminMatrimonyDirectory from './pages/AdminMatrimonyDirectory';
 import AdminEventCheckIn from './pages/AdminEventCheckIn';
 import AdminHomeEditor from './pages/AdminHomeEditor';
 import SessionBoundary from './components/SessionBoundary';
+import AdminContactDetail from './pages/AdminContactDetail';
+import AdminContactInbox from './pages/AdminContactInbox';
 
 function App() {
   //useAutoLogout();
@@ -93,6 +95,22 @@ function App() {
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndConditions />} />
 
+      <Route
+        path="/admin/contacts"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminContactInbox />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/contacts/:id"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'superAdmin']}>
+            <AdminContactDetail />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/homepage/edit"
         element={

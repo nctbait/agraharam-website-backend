@@ -18,7 +18,8 @@ import {
   BanknotesIcon,
   UserPlusIcon,
   ReceiptRefundIcon,
-  HomeIcon
+  HomeIcon,
+  InboxStackIcon
 } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 
@@ -72,6 +73,11 @@ export default function AdminSidebar({ isOpen = true }) {
     { to: '/admin/matrimony/directory', label: 'Matrimony Directory', icon: UsersIcon },
   ];
 
+  const supportLinks = [
+    { to: '/admin/contacts', label: 'Contact Us Inbox', icon: InboxStackIcon },
+    //{ to: '/admin/matrimony/directory', label: 'Matrimony Directory', icon: UsersIcon },
+  ];
+
   // Dashboard (always visible)
   const topLinks = [{ to: '/admin/dashboard', label: 'Dashboard', icon: WrenchIcon }];
 
@@ -90,9 +96,10 @@ export default function AdminSidebar({ isOpen = true }) {
         events: saved.events ?? true,
         reports: saved.reports ?? false,
         matrimony: saved.matrimony ?? false,
+        support: saved.support ?? false
       };
     } catch {
-      return { finance: true, youth: true, super: true, events: true, reports: false };
+      return { finance: true, youth: true, super: true, events: true, reports: true, matrimony: true, support: true };
     }
   });
 
@@ -177,6 +184,12 @@ export default function AdminSidebar({ isOpen = true }) {
       {/* Matrimony */}
       <Section title="Matrimony" id="matrimony">
         {matrimonyLinks.map((l) => (
+          <LinkItem key={l.to} {...l} />
+        ))}
+      </Section>
+      {/* Support */}
+      <Section title="Support" id="support">
+        {supportLinks.map((l) => (
           <LinkItem key={l.to} {...l} />
         ))}
       </Section>
