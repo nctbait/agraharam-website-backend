@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.agraharam.dto.BillDTO;
@@ -25,6 +26,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +49,27 @@ public class BillController {
 
     @Autowired
     private EventRepository eventRepository;
+
+    // BillController.java (add this alongside your existing submit)
+    @PostMapping(path = "/submit-json", consumes = "application/json")
+    // @PreAuthorize("hasAuthority('user') or hasAuthority('admin') or
+    // hasAuthority('superAdmin')")
+    public Map<String, Object> submitJson(@RequestBody BillSubmissionRequest req, Principal principal) {
+        Bill bill = new Bill();
+        bill.setMemberId(req.getMemberId());
+        bill.setMemberRelation(req.getMemberRelation());
+        bill.setAmount(req.getAmount());
+        bill.setDescription(req.getDescription());
+        bill.setEventId(req.getEventId());
+        bill.setZelleId(req.getZelleId());
+        bill.setZelleName(req.getZelleName());
+        billRepo.save(bill);
+
+        auditLogService.log("MEMBER_BILL_SUBMIT", principal.getName(), "Bill",
+                String.valueOf(bill.getId()), "Bill submitted, for membership id:" + req.getMemberId() + " " +
+                        req.getMemberRelation() + " for amount:" + req.getAmount());
+        return Map.of("id", bill.getId(), "status", bill.getStatus());
+    }
 
     @PostMapping(value = "/submit", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.ALL_VALUE })
     public ResponseEntity<?> submitBill(
@@ -98,60 +121,61 @@ public class BillController {
 
         return bills.stream().map(bill -> {
             String name = userRepo.findById(bill.getMemberId())
-                .map(u -> u.getFirstName() + " " + u.getLastName())
-                .orElse("Unknown");
-                String eventName = "";
-                if (bill.getEventId() != null) {
-                    eventName = eventRepository.findById(bill.getEventId())
-                                               .map(Event::getTitle)
-                                               .orElse("");
-                } 
-            return BillDTO.from(bill, name,eventName);
+                    .map(u -> u.getFirstName() + " " + u.getLastName())
+                    .orElse("Unknown");
+            String eventName = "";
+            if (bill.getEventId() != null) {
+                eventName = eventRepository.findById(bill.getEventId())
+                        .map(Event::getTitle)
+                        .orElse("");
+            }
+            return BillDTO.from(bill, name, eventName);
         }).toList();
     }
 
     @PostMapping("/admin/{id}/approve")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public ResponseEntity<?> approveBill(@PathVariable Long id, Principal principal) {
-        
+
         Bill bill = billRepo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
         bill.setStatus("approved");
         billRepo.save(bill);
 
         auditLogService.log("APPROVE_BILL", principal.getName(), "Bill",
-                    String.valueOf(bill.getId()), "Bill Approved, for membership id:" + bill.getMemberId() + " " +
-                    bill.getMemberRelation() + " for amount:" + bill.getAmount());
+                String.valueOf(bill.getId()), "Bill Approved, for membership id:" + bill.getMemberId() + " " +
+                        bill.getMemberRelation() + " for amount:" + bill.getAmount());
         return ResponseEntity.ok("Bill approved successfully");
     }
 
     @PostMapping("/admin/{id}/reject")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public ResponseEntity<?> rejectBill(@PathVariable Long id, Principal principal) {
-        
+
         Bill bill = billRepo.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Bill not found"));
         bill.setStatus("approved");
         billRepo.save(bill);
 
         auditLogService.log("REJECT_BILL", principal.getName(), "Bill",
-                    String.valueOf(bill.getId()), "Bill Rejected, for membership id:" + bill.getMemberId() + " " +
-                    bill.getMemberRelation() + " for amount:" + bill.getAmount());
+                String.valueOf(bill.getId()), "Bill Rejected, for membership id:" + bill.getMemberId() + " " +
+                        bill.getMemberRelation() + " for amount:" + bill.getAmount());
         return ResponseEntity.ok("Bill rejected successfully");
     }
 
     @PostMapping("/admin/bulk/approve")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public ResponseEntity<?> approveBillsBulk(@PathVariable List<Long> ids, Principal principal) {
-        
+
         List<Bill> bills = billRepo.findAllById(ids);
-        for (Bill bill : bills) {    
+        for (Bill bill : bills) {
             bill.setStatus("approved");
             billRepo.save(bill);
 
             auditLogService.logBatch("APPROVE_BILL", principal.getName(), "Bill",
-                        String.valueOf(bill.getId()), "Bill Approved, for membership id:" + bill.getMemberId() + " " +
-                        bill.getMemberRelation() + " for amount:" + bill.getAmount(),"Approve as batch by"+principal.getName());
+                    String.valueOf(bill.getId()), "Bill Approved, for membership id:" + bill.getMemberId() + " " +
+                            bill.getMemberRelation() + " for amount:" + bill.getAmount(),
+                    "Approve as batch by" + principal.getName());
         }
         return ResponseEntity.ok("Bills approved successfully");
     }
@@ -159,15 +183,16 @@ public class BillController {
     @PostMapping("/admin/bulk/reject")
     @PreAuthorize("hasAuthority('admin') or hasAuthority('superAdmin')")
     public ResponseEntity<?> rejectBillsBulk(@PathVariable List<Long> ids, Principal principal) {
-        
+
         List<Bill> bills = billRepo.findAllById(ids);
-        for (Bill bill : bills) {    
+        for (Bill bill : bills) {
             bill.setStatus("approved");
             billRepo.save(bill);
 
             auditLogService.logBatch("REJECT_BILL", principal.getName(), "Bill",
-                        String.valueOf(bill.getId()), "Bill Rejected, for membership id:" + bill.getMemberId() + " " +
-                        bill.getMemberRelation() + " for amount:" + bill.getAmount(),"Rejected as batch by"+principal.getName());
+                    String.valueOf(bill.getId()), "Bill Rejected, for membership id:" + bill.getMemberId() + " " +
+                            bill.getMemberRelation() + " for amount:" + bill.getAmount(),
+                    "Rejected as batch by" + principal.getName());
         }
         return ResponseEntity.ok("Bills rejected successfully");
     }

@@ -39,7 +39,7 @@ export default function AdminBillApprovals() {
 
   const handleBulkAction = async (action) => {
     if (selected.length === 0) return;
-    await api.post(`/api/admin/bills/bulk/${action}`, selected);
+    await api.post(`/api/bills/admin/bulk/${action}`, selected);
     const remaining = filtered.filter(b => !selected.includes(b.id));
     setBills(remaining);
     setFiltered(remaining);
@@ -47,12 +47,17 @@ export default function AdminBillApprovals() {
   };
 
   const handleSingleAction = async (id, action) => {
-    await api.post(`/api/admin/bills/${id}/${action}`);
+    await api.post(`/api/bills/admin/${id}/${action}`);
     const remaining = filtered.filter(b => b.id !== id);
     setBills(remaining);
     setFiltered(remaining);
   };
 
+  async function fetchBillAttachments(billId) {
+    return await api.get('/api/attachments', { params: { ownerType: 'BILL', ownerId: billId } }) || [];
+  }
+
+  
   return (
     <>
       <Navbar />
@@ -108,14 +113,7 @@ export default function AdminBillApprovals() {
                       <div className="text-xs text-gray-500">{b.zelleName}</div>
                     </td>
                     <td className="p-2">
-                      <a
-                        href={`/uploads/bills/${b.fileName}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        View
-                      </a>
+                      <BillDownloadCell billId={b.id} />
                     </td>
                     <td className="p-2 space-x-2">
                       <button
@@ -167,3 +165,91 @@ export default function AdminBillApprovals() {
     </>
   );
 }
+
+// --- Helpers for downloading bill attachments (inline component) ---
+
+async function fetchBillAttachments(billId) {
+  // Uses the centralized attachments API
+  // ownerType must match your AttachmentOwnerType enum value
+  return await api.get('/api/attachments', {
+    params: { ownerType: 'BILL', ownerId: billId }
+  }) || [];
+}
+
+function BillDownloadCell({ billId }) {
+  const [atts, setAtts] = useState(null); // null means "loading"
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const list = await fetchBillAttachments(billId);
+        if (mounted) setAtts(list);
+      } catch (e) {
+        console.error('attachments load', e);
+        if (mounted) setAtts([]);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [billId]);
+
+  async function downloadAttachmentById(id, filename = 'file') {
+    // Use your axios instance and make sure it includes auth headers
+    const res = await api.instance.get(`/api/attachments/${id}?download=true`, {
+      responseType: 'blob',
+    });
+    const blob = new Blob([res.data]);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
+  if (atts === null) return <span className="text-xs text-gray-500">Loading…</span>;
+  if (!atts.length) return <span className="text-xs text-gray-500">No file</span>;
+
+  // If only one attachment, show a simple “Download” link
+  if (atts.length === 1) {
+    const a = atts[0];
+    return (
+      <button
+        className="text-blue-600 underline"
+        onClick={() => downloadAttachmentById(a.id, a.filename)}
+      >
+        Download
+      </button>
+    );
+  }
+
+  // Multiple attachments: compact dropdown list of download links
+  return (
+    <div className="relative inline-block">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="text-blue-600 underline"
+      >
+        {atts.length} files
+      </button>
+      {open && (
+        <ul className="absolute z-10 mt-1 bg-white border rounded shadow min-w-[220px]">
+          {atts.map(a => (
+            <li key={a.id} className="px-3 py-2 hover:bg-gray-50">
+            <button
+              className="text-blue-600 hover:underline break-all"
+              onClick={() => downloadAttachmentById(a.id, a.filename)}
+            >
+              {a.filename}
+            </button>
+          </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
