@@ -235,43 +235,7 @@ export default function MatrimonyRegistration() {
 
             <input name="requirements" value={formData.requirements} onChange={handleChange}
               placeholder="Few words about your requirements" className="form-input h-12 rounded-xl border border-gray-300 px-4" />
-
-            <select name="imageDisplayPreference" value={formData.imageDisplayPreference} onChange={handleChange}
-              className="form-input h-12 rounded-xl border border-gray-300 px-4">
-              <option value="">Display Image Option</option>
-              <option value="kalyanam">Kalyanam Group</option>
-              <option value="private">Private</option>
-            </select>
           </div>
-
-          <div className="flex flex-col gap-3 border border-gray-300 rounded-xl p-4 mb-6">
-            <label className="font-semibold text-gray-700">Upload or Paste Profile Picture</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="border border-gray-300 rounded px-3 py-2"
-            />
-
-            <input
-              type="text"
-              name="profilePictureUrl"
-              placeholder="Paste image URL here"
-              value={formData.profilePictureUrl}
-              onChange={handleChange}
-              className="border border-gray-300 rounded px-3 py-2"
-            />
-
-            {formData.profilePictureUrl && (
-              <img
-                src={formData.profilePictureUrl}
-                alt="Profile Preview"
-                className="h-24 rounded border self-start mt-2"
-              />
-            )}
-          </div>
-
-
 
           <div className="flex justify-end">
             <button onClick={handleSubmit} className="rounded-xl h-10 px-6 bg-[#dce7f3] text-black text-sm font-bold">Submit</button>
