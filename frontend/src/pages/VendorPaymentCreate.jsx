@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 import api from '../api/authAxios';
+import AttachmentsPanel from '../components/AttachmentsPanel';
 
 /**
  * VendorPaymentCreate.jsx
@@ -16,6 +17,7 @@ import api from '../api/authAxios';
  */
 export default function VendorPaymentCreate() {
   const navigate = useNavigate();
+  const [createdId, setCreatedId] = useState(null);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -96,7 +98,9 @@ export default function VendorPaymentCreate() {
         paymentMethod: form.paymentMethod,
       };
       const res = await api.instance.post('/api/vendor-payments', payload);
-      setSuccess(`Vendor payment created (ID: ${res?.data?.id ?? ''}).`);
+      const id = res?.id;
+      setCreatedId(id);
+      setSuccess(`Vendor payment created (ID: ${id}).`);
       // reset form
       setForm({ vendorId: '', eventId: '', invoiceNumber: '', description: '', amount: '', paymentMethod: 'ZELLE' });
       // navigate to list (adjust route if your list lives elsewhere)
@@ -126,107 +130,117 @@ export default function VendorPaymentCreate() {
             {error && (
               <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-red-800">{error}</div>
             )}
-
-            <form onSubmit={submit} className="grid grid-cols-1 gap-4">
-              {/* Vendor */}
-              <div>
-                <label className="block text-sm font-medium">Vendor *</label>
-                <select
-                  name="vendorId"
-                  value={form.vendorId}
-                  onChange={onChange}
-                  required
-                  className="h-11 w-full rounded-lg border border-gray-300 px-3"
-                >
-                  <option value="" disabled>Select vendor</option>
-                  {vendors.map(v => (
-                    <option key={v.id} value={v.id}>{v.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Event (optional) */}
-              <div>
-                <label className="block text-sm font-medium">Event (optional)</label>
-                <select
-                  name="eventId"
-                  value={form.eventId}
-                  onChange={onChange}
-                  className="h-11 w-full rounded-lg border border-gray-300 px-3"
-                >
-                  <option value="">No event</option>
-                  {events.map(ev => (
-                    <option key={ev.id} value={ev.id}>{ev.title}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Invoice */}
-              <div>
-                <label className="block text-sm font-medium">Invoice #</label>
-                <input
-                  name="invoiceNumber"
-                  value={form.invoiceNumber}
-                  onChange={onChange}
-                  placeholder="INV-2025-001"
-                  maxLength={80}
-                  className="mt-1 w-full rounded-lg border px-3 py-2"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium">Description</label>
-                <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={onChange}
-                  placeholder="What is this payment for?"
-                  rows={3}
-                  maxLength={600}
-                  className="mt-1 w-full rounded-lg border px-3 py-2"
-                />
-              </div>
-
-              {/* Amount + Method */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {!createdId ? (
+              <form onSubmit={submit} className="grid grid-cols-1 gap-4">
+                {/* Vendor */}
                 <div>
-                  <label className="block text-sm font-medium">Amount (USD) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="amount"
-                    value={form.amount}
-                    onChange={onChange}
-                    placeholder="0.00"
-                    required
-                    className="mt-1 w-full rounded-lg border px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium">Payment Method *</label>
+                  <label className="block text-sm font-medium">Vendor *</label>
                   <select
-                    name="paymentMethod"
-                    value={form.paymentMethod}
+                    name="vendorId"
+                    value={form.vendorId}
                     onChange={onChange}
                     required
                     className="h-11 w-full rounded-lg border border-gray-300 px-3"
                   >
-                    {['ZELLE','PAYPAL','CHECK','BANK_TRANSFER','CASH'].map(m => (
-                      <option key={m} value={m}>{m.replace('_',' ')}</option>
+                    <option value="" disabled>Select vendor</option>
+                    {vendors.map(v => (
+                      <option key={v.id} value={v.id}>{v.name}</option>
                     ))}
                   </select>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => navigate('/vendor-payment-list')} className="h-10 px-4 rounded-lg border hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={saving} className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60">
-                  {saving ? 'Saving…' : 'Create Payment'}
-                </button>
+                {/* Event (optional) */}
+                <div>
+                  <label className="block text-sm font-medium">Event (optional)</label>
+                  <select
+                    name="eventId"
+                    value={form.eventId}
+                    onChange={onChange}
+                    className="h-11 w-full rounded-lg border border-gray-300 px-3"
+                  >
+                    <option value="">No event</option>
+                    {events.map(ev => (
+                      <option key={ev.id} value={ev.id}>{ev.title}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Invoice */}
+                <div>
+                  <label className="block text-sm font-medium">Invoice #</label>
+                  <input
+                    name="invoiceNumber"
+                    value={form.invoiceNumber}
+                    onChange={onChange}
+                    placeholder="INV-2025-001"
+                    maxLength={80}
+                    className="mt-1 w-full rounded-lg border px-3 py-2"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium">Description</label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={onChange}
+                    placeholder="What is this payment for?"
+                    rows={3}
+                    maxLength={600}
+                    className="mt-1 w-full rounded-lg border px-3 py-2"
+                  />
+                </div>
+
+                {/* Amount + Method */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium">Amount (USD) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      name="amount"
+                      value={form.amount}
+                      onChange={onChange}
+                      placeholder="0.00"
+                      required
+                      className="mt-1 w-full rounded-lg border px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Payment Method *</label>
+                    <select
+                      name="paymentMethod"
+                      value={form.paymentMethod}
+                      onChange={onChange}
+                      required
+                      className="h-11 w-full rounded-lg border border-gray-300 px-3"
+                    >
+                      {['ZELLE', 'PAYPAL', 'CHECK', 'BANK_TRANSFER', 'CASH'].map(m => (
+                        <option key={m} value={m}>{m.replace('_', ' ')}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button type="button" onClick={() => navigate('/vendor-payment-list')} className="h-10 px-4 rounded-lg border hover:bg-gray-50">Cancel</button>
+                  <button type="submit" disabled={saving} className="h-10 px-6 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60">
+                    {saving ? 'Saving…' : 'Create Payment'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <AttachmentsPanel ownerType="VENDOR_PAYMENT" ownerId={createdId} canEdit />
+                <div className="flex justify-end gap-2">
+                  <button onClick={() => navigate('/vendor-payment-list')} className="h-10 px-6 rounded-lg bg-gray-100">
+                    Done
+                  </button>
+                </div>
               </div>
-            </form>
+            )}
           </main>
         </div>
       </div>

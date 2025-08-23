@@ -4,6 +4,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import AdminSidebar from '../components/AdminSidebar';
 import api from '../api/authAxios';
+import AttachmentsPanel from '../components/AttachmentsPanel';
 
 /**
  * VendorPaymentList.jsx
@@ -20,7 +21,7 @@ export default function VendorPaymentList() {
   // filters & paging
   const [vendors, setVendors] = useState([]);
   const [events, setEvents] = useState([]);
-  const [statusOptions] = useState(['PENDING','APPROVED','PAID','REJECTED']);
+  const [statusOptions] = useState(['PENDING', 'APPROVED', 'PAID', 'REJECTED']);
 
   const [filters, setFilters] = useState({ vendorId: '', eventId: '', status: '' });
   const [page, setPage] = useState(0);
@@ -151,14 +152,14 @@ export default function VendorPaymentList() {
       {row.status === 'PENDING' && (
         <>
           <button onClick={() => openModal('approve', row, 'Approval note (optional)')}
-                  className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Approve</button>
+            className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Approve</button>
           <button onClick={() => openModal('reject', row, 'Reason (required)')}
-                  className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Reject</button>
+            className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Reject</button>
         </>
       )}
       {row.status === 'APPROVED' && (
         <button onClick={() => openModal('markPaid', row, 'Transaction Ref (required)')}
-                className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Mark Paid</button>
+          className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Mark Paid</button>
       )}
     </div>
   );
@@ -220,7 +221,7 @@ export default function VendorPaymentList() {
                   onChange={(e) => { setSize(Number(e.target.value)); setPage(0); }}
                   className="h-11 rounded-lg border border-gray-300 px-3"
                 >
-                  {[10,20,50].map(n => <option key={n} value={n}>{n}</option>)}
+                  {[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
             </div>
@@ -276,11 +277,11 @@ export default function VendorPaymentList() {
               </p>
               <div className="flex items-center gap-2">
                 <button onClick={() => canPrev && setPage(p => Math.max(0, p - 1))}
-                        disabled={!canPrev}
-                        className="px-3 py-1.5 rounded-lg border disabled:opacity-50">Prev</button>
+                  disabled={!canPrev}
+                  className="px-3 py-1.5 rounded-lg border disabled:opacity-50">Prev</button>
                 <button onClick={() => canNext && setPage(p => p + 1)}
-                        disabled={!canNext}
-                        className="px-3 py-1.5 rounded-lg border disabled:opacity-50">Next</button>
+                  disabled={!canNext}
+                  className="px-3 py-1.5 rounded-lg border disabled:opacity-50">Next</button>
               </div>
             </div>
 
@@ -420,6 +421,15 @@ export default function VendorPaymentList() {
                 {selected.status === 'APPROVED' && (
                   <button onClick={() => openModal('markPaid', selected, 'Transaction Ref (required)')} className="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Mark Paid</button>
                 )}
+              </div>
+              {/* Attachments for this vendor payment */}
+              <div className="mt-3">
+                <AttachmentsPanel
+                  ownerType="VENDOR_PAYMENT"
+                  ownerId={selected.id}
+                  // allow upload only while not PAID (tweak as you wish)
+                  canEdit={selected.status !== 'PAID'}
+                />
               </div>
             </div>
           )}
