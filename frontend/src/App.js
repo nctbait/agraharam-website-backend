@@ -73,6 +73,9 @@ import AdminHomeEditor from './pages/AdminHomeEditor';
 import SessionBoundary from './components/SessionBoundary';
 import AdminContactDetail from './pages/AdminContactDetail';
 import AdminContactInbox from './pages/AdminContactInbox';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import SecurityMFA from './pages/SecurityMFA';
 
 function App() {
   //useAutoLogout();
@@ -94,7 +97,17 @@ function App() {
       <Route path="/contact" element={<ContactUs />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/forgotPassword" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
+      <Route
+        path="/account/security"
+        element={
+          <ProtectedRoute allowedRoles={['user','admin', 'superAdmin']}>
+            <SecurityMFA />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/contacts"
         element={

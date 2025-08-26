@@ -11,7 +11,8 @@ import {
   ClockIcon,
   HomeIcon,
   DocumentCurrencyDollarIcon,
-  BellIcon
+  BellIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 const links = [
@@ -24,6 +25,7 @@ const links = [
   { label: 'Volunteer Hours', icon: ClockIcon, to: '/volunteer-hours' },
   { label: 'Tax Documents', icon: DocumentTextIcon, to: '/user-tax-docs' },
   { label: 'Matrimony Search', icon: HeartIcon, to: '/matrimony-profiles' },
+  { label: 'Security', icon: ShieldCheckIcon, to: '/account/security' },
 ];
 
 export default function Sidebar({ isOpen, showDashboardLink = false }) {

@@ -7,8 +7,11 @@ import java.util.Optional;
 import org.agraharam.enums.Role;
 import org.agraharam.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import jakarta.transaction.Transactional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -50,4 +53,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     """)
     List<User> findNewMembersBetween(@Param("start") LocalDateTime start,
                                      @Param("end") LocalDateTime end);
+
+                                     @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Transactional
+  @Query("update User u set u.totpEnabled = :enabled, u.totpSecret = :secret where u.id = :userId")
+  int updateTotp(@Param("userId") Long userId,
+                 @Param("enabled") boolean enabled,
+                 @Param("secret") String secret);
 }

@@ -26,9 +26,23 @@ export default function HomePage() {
   const isLoggedIn = () => !!localStorage.getItem("jwtToken");
   // You can move this base URL to an env var (e.g., VITE_API_BASE_URL or REACT_APP_API_BASE_URL)
   const apiBase = useMemo(() => {
-    const fromEnv = import.meta?.env?.VITE_API_BASE_URL || process.env.REACT_APP_API_BASE_URL;
+    const fromEnv = process.env.REACT_APP_API_BASE_URL;
     return (fromEnv || "").replace(/\/$/, "");
   }, []);
+  // --- Saffron theme (can move to admin later) ---
+  const THEME = useMemo(() => ({
+    brand: '#F57C00',      // saffron (primary)
+    brandDark: '#E65100',  // deeper saffron
+    brandLight: '#FFF3E0', // pale saffron
+    accent: '#0E7490',     // teal accent
+  }), []);
+
+  const pageBgStyle = useMemo(() => ({
+    backgroundImage: `
+          radial-gradient(60% 40% at 100% 0%, ${THEME.brandLight} 0%, rgba(255,255,255,0) 60%),
+          radial-gradient(40% 30% at 0% 100%, ${THEME.brandLight} 0%, rgba(255,255,255,0) 65%)
+        `
+  }), [THEME.brandLight]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -73,29 +87,35 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-
-        
-
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 min-h-screen" style={pageBgStyle}>
         {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
           {/* Next Event banner spans full width */}
           {nextEvent && (
             <div className="lg:col-span-12">
-              <div className="w-full rounded-lg bg-yellow-300 text-black p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <div className="font-semibold">🎉 Next Event:</div>
-                <div className="flex-1">
+              <div
+                className="w-full rounded-lg p-3 sm:p-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                style={{ background: `linear-gradient(90deg, ${THEME.brandLight}, #fff)` }}
+              >
+                <span
+                  className="px-2 py-1 text-[11px] sm:text-xs font-bold rounded-md"
+                  style={{ backgroundColor: THEME.brand, color: 'white' }}
+                >
+                  NEXT EVENT
+                </span>
+                <div className="flex-1 text-gray-900">
                   <span className="font-bold">{nextEvent.name}</span>
                   {nextEvent.date && (
-                    <span className="ml-2 text-sm opacity-80">
+                    <span className="ml-2 text-sm text-gray-600">
                       {new Date(nextEvent.date).toLocaleString()}
                     </span>
                   )}
                 </div>
                 <Link
                   to={targetHref}
-                  className="inline-flex items-center justify-center px-3 h-9 rounded-md bg-black text-white text-sm font-semibold"
+                  className="inline-flex items-center justify-center px-3 h-9 rounded-md text-sm font-semibold shadow-sm"
+                  style={{ backgroundColor: THEME.brandDark, color: 'white' }}
                 >
                   Register Now
                 </Link>
@@ -128,7 +148,6 @@ export default function HomePage() {
                       />
                     )}
                     <div className="flex flex-col gap-1">
-                      <p className="text-xs text-gray-500">Community News</p>
                       <h3 className="text-base font-semibold text-gray-900">{item.title}</h3>
                       <p className="text-sm text-gray-600">{item.description}</p>
                       {item.linkUrl && (
@@ -136,7 +155,8 @@ export default function HomePage() {
                           href={item.linkUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm font-semibold text-blue-700 hover:underline mt-1"
+                          className="text-sm font-semibold hover:underline mt-1"
+                          style={{ color: THEME.accent }}
                         >
                           Read more
                         </a>
@@ -155,8 +175,12 @@ export default function HomePage() {
 
             {/* Announcements */}
             {announcements?.length > 0 && (
-              <div className="rounded-lg bg-blue-50 text-blue-900 p-3 border border-blue-200">
-                <div className="text-sm font-semibold mb-2">Announcements</div>
+              <div
+                className="rounded-lg p-3 border"
+                style={{ backgroundColor: THEME.brandLight, borderColor: '#FDE68A' }}
+              >
+                <div className="text-sm font-semibold mb-2" style={{ color: THEME.brandDark }}>Announcements</div>
+
                 <ul className="space-y-1">
                   {announcements.map((a, i) => (
                     <li key={`ann-${i}`} className="text-sm leading-snug">{a}</li>
@@ -190,7 +214,7 @@ export default function HomePage() {
                         style={{ padding: paddingPx }}
                       >
                         <div className="w-full" style={{ aspectRatio: aspect, backgroundColor: bg, minHeight: '56px' }}>
-                          <img src={ad.imageUrl} alt={ad.label || 'Sponsor logo'} className={`w-full h-full ${imgClass}`} loading="lazy" />
+                        <img src={ad.imageUrl} alt={ad.label || 'Sponsor logo'} className={`w-full h-full ${imgClass}`} loading="lazy" />
                         </div>
                         {ad.label && <div className="pt-1 text-[11px] text-center text-gray-700">{ad.label}</div>}
                       </a>
@@ -202,8 +226,12 @@ export default function HomePage() {
 
             {/* Mission */}
             {(data.mission || true) && (
-              <div className="rounded-xl bg-amber-50 border border-amber-200 p-4">
-                <h2 className="text-lg font-bold text-amber-900">
+              <div
+                className="rounded-xl p-4 border"
+                style={{ backgroundColor: THEME.brandLight, borderColor: '#FBD38D' }}
+              >
+                <h2 className="text-lg font-bold" style={{ color: THEME.brandDark }}>
+
                   {data.mission?.title || "North Carolina Telugu Brahmin Association"}
                 </h2>
                 <p className="mt-2 text-gray-800 text-sm leading-relaxed whitespace-pre-line">
@@ -213,8 +241,9 @@ export default function HomePage() {
                 {data.mission?.ctaUrl && (
                   <Link
                     to={data.mission.ctaUrl}
-                    className="inline-flex items-center mt-3 px-3 h-9 rounded-md bg-amber-700 text-white text-xs font-semibold"
-                  >
+                    className="inline-flex items-center mt-3 px-3 h-9 rounded-md text-white text-xs font-semibold shadow-sm"
+                    style={{ backgroundColor: THEME.brandDark }}
+                   >
                     {data.mission.ctaText || "Learn more"}
                   </Link>
                 )}
@@ -241,13 +270,19 @@ export default function HomePage() {
           </section>*/}
         </div>
         {/* Hero: compact, logo-contained */}
-        <section className="rounded-lg mb-4 flex items-center justify-center h-24 sm:h-32 md:h-40 lg:h-48">
-          <img
-            src="/images/Agraharam_Logo_Transperant_Background.png"
-            alt="NCTBA — Agraharam NC"
-            className="w-auto max-h-16 sm:max-h-20 md:max-h-24 lg:max-h-28 object-contain"
-            loading="lazy"
-          />
+        {/* Hero: saffron ribbon + logo */}
+        <section className="rounded-xl mb-4 overflow-hidden">
+          <div
+            className="h-24 sm:h-28 md:h-32 lg:h-36 w-full flex items-center justify-center"
+            style={{ backgroundImage: `linear-gradient(90deg, ${THEME.brand} 0%, ${THEME.brandDark} 100%)` }}
+          >
+            <img
+              src="/images/Agraharam_Logo_Transperant_Background.png"
+              alt="NCTBA — Agraharam NC"
+              className="h-10 sm:h-12 md:h-14 w-auto object-contain drop-shadow"
+              loading="lazy"
+            />
+          </div>
         </section>
       </main>
 
