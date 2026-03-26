@@ -1,0 +1,6 @@
+.git
+target
+node_modules
+frontend/node_modules
+uploads/*
+!uploads/.gitkeep

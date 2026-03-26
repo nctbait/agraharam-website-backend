@@ -1,0 +1,15 @@
+:80 {
+
+  root * /srv
+  encode gzip
+
+  route {
+                reverse_proxy /api/* backend:8080
+
+                # Redirect all routes not matching files to index.html for client-side routing
+                try_files {path} /index.html # This allows React Router to take over for non-file URLs
+
+                # Serve static files (React app)
+                file_server
+           }
+}

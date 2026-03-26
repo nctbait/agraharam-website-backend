@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+
+### Build React
+FROM node:23-alpine AS build
+WORKDIR /web
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ .
+# .env.production makes baseURL=/api at build time
+RUN npm run build
+
+### Serve with Caddy and proxy /api -> backend:8080
+FROM caddy:2.8-alpine
+COPY --from=build /web/build /srv
+COPY Caddyfile /etc/caddy/Caddyfile
+EXPOSE 80 443

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Sidebar from '../components/Sidebar'; // use AdminSidebar if needed
+import api from '../api/authAxios';
+
 
 const sampleNotifications = [
   {
