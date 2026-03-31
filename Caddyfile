@@ -1,4 +1,4 @@
-:80 {
+{$SITE_HOST} {
 
   root * /srv
   encode gzip

@@ -11,7 +11,7 @@ export default function Footer() {
           <Link to="/privacy">Privacy Policy</Link>
           <Link to="/terms">Terms of Service</Link>
         </div>
-        <p>&copy; 2025 NCTBA - Agraharam NC. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} NCTBA - Agraharam NC. All rights reserved.</p>
       </div>
     </footer>
   );

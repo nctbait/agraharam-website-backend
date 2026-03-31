@@ -75,10 +75,10 @@ export default function Navbar() {
           )}
 
           {!isLoggedIn ? (
-            <>
+            <div className="flex items-center gap-2">
               <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">Register</Link>
               <Link to="/login" className="bg-gray-100 text-black px-4 py-2 rounded-lg text-sm font-bold">Login</Link>
-            </>
+            </div>
           ) : (
             <LogoutButton />
           )}

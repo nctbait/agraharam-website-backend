@@ -88,6 +88,43 @@ export default function HomePage() {
     <>
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 min-h-screen" style={pageBgStyle}>
+
+        {/* Hero */}
+        <section className="rounded-xl mb-6 overflow-hidden">
+          <div
+            className="w-full flex flex-col items-center justify-center text-center px-6 py-12 sm:py-16"
+            style={{ backgroundImage: `linear-gradient(135deg, ${THEME.brand} 0%, ${THEME.brandDark} 100%)` }}
+          >
+            <img
+              src="/images/Agraharam_Logo_Transperant_Background.png"
+              alt="NCTBA — Agraharam NC"
+              className="h-14 sm:h-16 w-auto object-contain drop-shadow mb-4"
+              loading="eager"
+            />
+            <h1 className="text-white text-2xl sm:text-3xl font-bold tracking-tight drop-shadow">
+              North Carolina Telugu Brahmin Association
+            </h1>
+            <p className="mt-2 text-orange-100 text-sm sm:text-base max-w-xl">
+              Uniting Telugu Brahmin families across North Carolina — building stronger bonds, deeper cultural roots for our children, and lasting impact for the communities we call home.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <Link
+                to={isLoggedIn() ? "/dashboard" : "/register"}
+                className="inline-flex items-center px-5 h-10 rounded-lg text-sm font-bold shadow"
+                style={{ backgroundColor: 'white', color: THEME.brandDark }}
+              >
+                {isLoggedIn() ? "Go to Dashboard" : "Join the Community"}
+              </Link>
+              <Link
+                to="/committees"
+                className="inline-flex items-center px-5 h-10 rounded-lg text-sm font-bold border border-white text-white"
+              >
+                Explore Services
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* Grid layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -166,7 +203,18 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              !loading && <div className="text-sm text-gray-500">No news to display right now. Check back later.</div>
+              !loading && (
+                <div className="rounded-lg border border-dashed border-gray-200 bg-white p-6 flex flex-col items-center text-center gap-3">
+                  <p className="text-sm text-gray-500">No news to display right now. Check back soon!</p>
+                  <Link
+                    to="/committees"
+                    className="inline-flex items-center px-4 h-9 rounded-md text-sm font-semibold text-white shadow-sm"
+                    style={{ backgroundColor: THEME.brand }}
+                  >
+                    Explore our Services
+                  </Link>
+                </div>
+              )
             )}
           </section>
 
@@ -174,20 +222,21 @@ export default function HomePage() {
           <aside className="lg:col-span-4 space-y-4">
 
             {/* Announcements */}
-            {announcements?.length > 0 && (
-              <div
-                className="rounded-lg p-3 border"
-                style={{ backgroundColor: THEME.brandLight, borderColor: '#FDE68A' }}
-              >
-                <div className="text-sm font-semibold mb-2" style={{ color: THEME.brandDark }}>Announcements</div>
-
+            <div
+              className="rounded-lg p-3 border"
+              style={{ backgroundColor: THEME.brandLight, borderColor: '#FDE68A' }}
+            >
+              <div className="text-sm font-semibold mb-2" style={{ color: THEME.brandDark }}>Announcements</div>
+              {announcements?.length > 0 ? (
                 <ul className="space-y-1">
                   {announcements.map((a, i) => (
                     <li key={`ann-${i}`} className="text-sm leading-snug">{a}</li>
                   ))}
                 </ul>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-gray-600">No announcements at this time. Stay tuned!</p>
+              )}
+            </div>
 
             {/* Sponsors (object-contain logos; responsive) */}
             {ads?.length > 0 && (
@@ -269,21 +318,6 @@ export default function HomePage() {
             </div>
           </section>*/}
         </div>
-        {/* Hero: compact, logo-contained */}
-        {/* Hero: saffron ribbon + logo */}
-        <section className="rounded-xl mb-4 overflow-hidden">
-          <div
-            className="h-24 sm:h-28 md:h-32 lg:h-36 w-full flex items-center justify-center"
-            style={{ backgroundImage: `linear-gradient(90deg, ${THEME.brand} 0%, ${THEME.brandDark} 100%)` }}
-          >
-            <img
-              src="/images/Agraharam_Logo_Transperant_Background.png"
-              alt="NCTBA — Agraharam NC"
-              className="h-10 sm:h-12 md:h-14 w-auto object-contain drop-shadow"
-              loading="lazy"
-            />
-          </div>
-        </section>
       </main>
 
       <Footer />
