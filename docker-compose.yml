@@ -12,6 +12,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       FILE_UPLOAD_DIR: /app/uploads
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
     volumes:
       - ./uploads:/app/uploads
     expose:
