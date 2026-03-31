@@ -30,8 +30,15 @@ services:
       TZ: ${TZ}
       SITE_HOST: ${SITE_HOST}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - backend
     ports:
       - "80:80"
       - "443:443"
+
+volumes:
+  caddy_data:
+  caddy_config:
